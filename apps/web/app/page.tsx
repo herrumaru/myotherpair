@@ -45,7 +45,7 @@ export default function SplashPage() {
       <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/75" />
 
       {/* Logo — pushed toward top */}
-      <div className="relative flex-1 flex items-start justify-center px-10 pt-16">
+      <div className="relative flex-1 flex items-start justify-center px-10 pt-8">
         <Image
           src="/logo-transparent.png"
           alt="myotherpair"
