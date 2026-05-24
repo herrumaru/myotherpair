@@ -30,42 +30,29 @@ export default function SplashPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col overflow-hidden">
-
-      {/* Full-screen background image */}
-      <Image
-        src="https://images.pexels.com/photos/1020372/pexels-photo-1020372.jpeg?auto=compress&cs=tinysrgb&w=800"
-        alt="Pink sneakers"
-        fill
-        className="object-cover object-center"
-        priority
-      />
-
-      {/* Gradient overlay — transparent top, dark bottom */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-black/10 to-black/75" />
+    <div className="min-h-screen bg-white flex flex-col">
 
       {/* Centered logo */}
-      <div className="relative flex-1 flex items-center justify-center px-10">
+      <div className="flex-1 flex items-center justify-center px-10">
         <Image
           src="/logo-pink.jpeg"
           alt="myotherpair"
           width={300}
           height={164}
           className="object-contain w-full max-w-[300px]"
-          style={{ mixBlendMode: 'multiply' }}
         />
       </div>
 
       {/* Bottom text + actions */}
-      <div className="relative px-6 pb-14">
-        <h1 className="font-display text-[3.2rem] font-bold text-white leading-[1.0] tracking-[-0.03em] mb-3 text-center">
+      <div className="px-6 pb-14">
+        <h1 className="font-display text-[3.2rem] font-bold text-foreground leading-[1.0] tracking-[-0.03em] mb-3 text-center">
           Every shoe<br />deserves<br /><span className="italic">a match.</span>
         </h1>
-        <p className="text-white/55 text-[14px] leading-relaxed text-center mb-8 max-w-[260px] mx-auto">
+        <p className="text-foreground/40 text-[14px] leading-relaxed text-center mb-8 max-w-[260px] mx-auto">
           The marketplace for single shoes, for mismatched feet and single-foot needs.
         </p>
 
-        <p className="text-center text-[11px] text-white/30 leading-relaxed mb-5 px-4">
+        <p className="text-center text-[11px] text-foreground/25 leading-relaxed mb-5 px-4">
           By tapping &lsquo;Create account&rsquo; you agree to our{' '}
           <span className="underline underline-offset-2">Terms of Service</span> and{' '}
           <span className="underline underline-offset-2">Privacy Policy</span>.
@@ -74,13 +61,13 @@ export default function SplashPage() {
         <div className="space-y-3">
           <a
             href="/signup"
-            className="block w-full h-14 rounded-full bg-white text-foreground text-[15px] font-semibold flex items-center justify-center transition-opacity hover:opacity-90 active:opacity-75"
+            className="block w-full h-14 rounded-full bg-foreground text-background text-[15px] font-semibold flex items-center justify-center transition-opacity hover:opacity-80 active:opacity-70"
           >
             Create account
           </a>
           <a
             href="/login"
-            className="block w-full h-14 rounded-full border-2 border-white/40 text-white text-[15px] font-medium flex items-center justify-center transition-opacity hover:opacity-80 active:opacity-60"
+            className="block w-full h-14 rounded-full border-2 border-foreground/15 text-foreground text-[15px] font-medium flex items-center justify-center transition-opacity hover:opacity-70 active:opacity-50"
           >
             Sign in
           </a>
