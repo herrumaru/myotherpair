@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, type KeyboardEvent, type ClipboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Pencil, Check, X } from 'lucide-react';
 
 export default function VerifyOtpPage() {
   const router = useRouter();
@@ -14,11 +14,14 @@ export default function VerifyOtpPage() {
     setEmail(params.get('email') ?? '');
   }, []);
 
-  const [digits,    setDigits]    = useState(['', '', '', '', '', '']);
-  const [loading,   setLoading]   = useState(false);
-  const [error,     setError]     = useState('');
-  const [resending, setResending] = useState(false);
-  const [resent,    setResent]    = useState(false);
+  const [digits,      setDigits]      = useState(['', '', '', '', '', '']);
+  const [loading,     setLoading]     = useState(false);
+  const [error,       setError]       = useState('');
+  const [resending,   setResending]   = useState(false);
+  const [resent,      setResent]      = useState(false);
+  const [editingEmail, setEditingEmail] = useState(false);
+  const [emailDraft,   setEmailDraft]   = useState('');
+  const emailInputRef = useRef<HTMLInputElement>(null);
 
   const refs = useRef<Array<HTMLInputElement | null>>([null, null, null, null, null, null]);
 
@@ -115,6 +118,31 @@ export default function VerifyOtpPage() {
     setTimeout(() => setResent(false), 5000);
   }
 
+  function startEditEmail() {
+    setEmailDraft(email);
+    setEditingEmail(true);
+    setTimeout(() => emailInputRef.current?.focus(), 50);
+  }
+
+  async function confirmEditEmail() {
+    const trimmed = emailDraft.trim();
+    if (!trimmed || !/\S+@\S+\.\S+/.test(trimmed)) return;
+    setEmail(trimmed);
+    setEditingEmail(false);
+    setDigits(['', '', '', '', '', '']);
+    setError('');
+    setResending(true);
+    await supabase.auth.resend({ type: 'signup', email: trimmed });
+    setResending(false);
+    setResent(true);
+    setTimeout(() => setResent(false), 5000);
+  }
+
+  function cancelEditEmail() {
+    setEditingEmail(false);
+    setEmailDraft('');
+  }
+
   const filled = digits.join('').length === 6;
 
   return (
@@ -137,12 +165,40 @@ export default function VerifyOtpPage() {
         <h1 className="font-display text-[2rem] font-bold text-foreground leading-tight tracking-[-0.02em] text-center mb-2">
           Check your email
         </h1>
-        <p className="text-center text-black/40 text-[14px] mb-1 leading-relaxed">
+        <p className="text-center text-black/40 text-[14px] mb-3 leading-relaxed">
           We sent a 6-digit code to
         </p>
-        <p className="text-center text-foreground text-[14px] font-semibold mb-10 break-all">
-          {email}
-        </p>
+
+        {editingEmail ? (
+          <div className="bg-white rounded-2xl border-2 border-foreground px-4 py-3 mb-8 flex items-center gap-2">
+            <input
+              ref={emailInputRef}
+              type="email"
+              value={emailDraft}
+              onChange={e => setEmailDraft(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') confirmEditEmail(); if (e.key === 'Escape') cancelEditEmail(); }}
+              className="flex-1 bg-transparent text-foreground text-[15px] outline-none"
+              autoComplete="email"
+            />
+            <button onClick={confirmEditEmail} className="p-1 text-foreground hover:opacity-70 transition-opacity" aria-label="Confirm">
+              <Check className="w-4 h-4" />
+            </button>
+            <button onClick={cancelEditEmail} className="p-1 text-black/30 hover:text-foreground transition-colors" aria-label="Cancel">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center gap-2 mb-8">
+            <p className="text-foreground text-[14px] font-semibold break-all">{email}</p>
+            <button
+              onClick={startEditEmail}
+              className="p-1.5 rounded-full hover:bg-black/5 transition-colors flex-shrink-0"
+              aria-label="Edit email"
+            >
+              <Pencil className="w-3.5 h-3.5 text-black/40" />
+            </button>
+          </div>
+        )}
 
         {/* OTP boxes */}
         <div className="flex justify-center gap-2.5 mb-6">
