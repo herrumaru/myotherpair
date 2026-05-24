@@ -47,7 +47,7 @@ export default function SplashPage() {
       {/* Centered logo */}
       <div className="relative flex-1 flex items-center justify-center px-10">
         <Image
-          src="/logo-pink.png"
+          src="/logo-white.png"
           alt="myotherpair"
           width={300}
           height={164}
