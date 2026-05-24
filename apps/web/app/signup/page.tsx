@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useMemo, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { supabase } from '../../lib/supabase';
-import { ArrowLeft, ArrowRight, Info, Eye, EyeOff, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, EyeOff, Check } from 'lucide-react';
 import { Country, City } from 'country-state-city';
 import { getPasswordStrength } from '../../lib/passwordStrength';
 import { SUPPORTED_COUNTRY_CODES } from '../../lib/countries';
@@ -16,161 +15,126 @@ import {
   detectSizeSystem,
 } from '../../lib/sizeConversion';
 
-// ─── Password strength bar ────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function PasswordStrengthBar({ password }: { password: string }) {
   const result = useMemo(() => getPasswordStrength(password), [password]);
   if (!password) return null;
-
   return (
-    <div className="mt-2 space-y-2">
-      {/* 5-segment bar */}
+    <div className="mt-3 space-y-2">
       <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map(i => (
-          <div
-            key={i}
-            className={`flex-1 h-1 rounded-full transition-all duration-300 ${
-              i <= result.score ? result.barColor : 'bg-border'
-            }`}
-          />
+          <div key={i} className={`flex-1 h-1 rounded-full transition-all duration-300 ${i <= result.score ? result.barColor : 'bg-black/10'}`} />
         ))}
       </div>
-      {/* Label */}
-      <div className="flex items-center justify-between">
-        <div className="flex flex-wrap gap-x-2 gap-y-0.5">
-          {result.checks.map(c => (
-            <span
-              key={c.label}
-              className={`text-[10px] flex items-center gap-0.5 transition-colors ${
-                c.pass ? 'text-green-500' : 'text-muted-foreground/60'
-              }`}
-            >
-              {c.pass ? <Check className="h-2.5 w-2.5" /> : <span className="w-2.5 h-2.5 flex items-center justify-center text-[8px]">○</span>}
-              {c.label}
-            </span>
-          ))}
-        </div>
-        {result.label && (
-          <span className={`text-[10px] font-semibold shrink-0 ml-2 ${result.color}`}>
-            {result.label}
+      <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+        {result.checks.map(c => (
+          <span key={c.label} className={`text-[11px] flex items-center gap-1 ${c.pass ? 'text-green-600' : 'text-black/30'}`}>
+            {c.pass ? <Check className="h-2.5 w-2.5" /> : <span className="w-2.5 inline-block" />}
+            {c.label}
           </span>
-        )}
+        ))}
+        {result.label && <span className={`text-[11px] font-semibold ml-auto ${result.color}`}>{result.label}</span>}
       </div>
     </div>
   );
 }
 
-// ─── Tooltip ──────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-function ConversionTooltip() {
-  const [open, setOpen] = useState(false);
-  return (
-    <span className="relative inline-flex items-center">
-      <button
-        type="button"
-        onClick={() => setOpen(v => !v)}
-        className="text-muted-foreground/50 hover:text-accent transition-colors"
-        aria-label="Size conversion chart"
-      >
-        <Info className="h-3.5 w-3.5" />
-      </button>
-      {open && (
-        <div className="absolute bottom-6 left-0 z-50 w-56 bg-card border border-border/40 rounded-xl shadow-lg p-3 text-[11px] text-foreground">
-          <p className="font-semibold mb-2 text-[10px] uppercase tracking-widest text-muted-foreground">Quick reference</p>
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="text-muted-foreground/60">
-                <th className="text-left pb-1 font-medium">UK</th>
-                <th className="text-left pb-1 font-medium">US</th>
-                <th className="text-left pb-1 font-medium">EU</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { uk: '5', us: '6', eu: '38' },
-                { uk: '6', us: '7', eu: '39' },
-                { uk: '7', us: '8', eu: '41' },
-                { uk: '8', us: '9', eu: '42' },
-                { uk: '9', us: '10', eu: '43' },
-                { uk: '10', us: '11', eu: '44' },
-                { uk: '11', us: '12', eu: '45' },
-              ].map(r => (
-                <tr key={r.uk} className="border-t border-border/20">
-                  <td className="py-0.5">{r.uk}</td>
-                  <td className="py-0.5">{r.us}</td>
-                  <td className="py-0.5">{r.eu}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <p className="text-muted-foreground/50 mt-2 text-[10px]">Mens/unisex. Women's run ~1.5 sizes smaller in US.</p>
-        </div>
-      )}
-    </span>
-  );
+interface FormState {
+  firstName:      string;
+  lastName:       string;
+  email:          string;
+  password:       string;
+  countryCode:    string;
+  city:           string;
+  sizeSystem:     SizeSystem;
+  leftFootSize:   string;
+  rightFootSize:  string;
+  isAmputee:      boolean;
+  amputeeSide:    '' | 'left' | 'right';
+  neededFootSize: string;
 }
 
-// ─── Size system toggle ───────────────────────────────────────────────────────
+type FootType = 'different' | 'amputee' | null;
 
-interface SizeSystemToggleProps { value: SizeSystem; onChange: (v: SizeSystem) => void; }
+const ALL_COUNTRIES = Country.getAllCountries().filter(c => SUPPORTED_COUNTRY_CODES.has(c.isoCode));
 
-function SizeSystemToggle({ value, onChange }: SizeSystemToggleProps) {
+// ─── Reusable components ──────────────────────────────────────────────────────
+
+function CardInput({
+  label, value, onChange, type = 'text', placeholder = '', disabled = false, autoComplete = '',
+}: {
+  label: string; value: string; onChange: (v: string) => void;
+  type?: string; placeholder?: string; disabled?: boolean; autoComplete?: string;
+}) {
   return (
-    <div className="flex gap-2">
-      {(['UK', 'US', 'EU'] as SizeSystem[]).map(sys => (
-        <button
-          key={sys}
-          type="button"
-          onClick={() => onChange(sys)}
-          className={`flex-1 h-11 rounded-xl text-sm font-semibold border transition-all duration-200 ${
-            value === sys
-              ? 'bg-accent text-accent-foreground border-accent shadow-sm'
-              : 'bg-muted/50 text-muted-foreground border-border/30 hover:border-border'
-          }`}
-        >
-          {sys}
-        </button>
-      ))}
+    <div className={`bg-white rounded-2xl border border-black/10 px-5 py-4 transition-all ${disabled ? 'opacity-40' : ''}`}>
+      <p className="text-xs text-black/40 font-medium mb-1">{label}</p>
+      <input
+        type={type}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        disabled={disabled}
+        autoComplete={autoComplete}
+        className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder-black/20 leading-snug"
+      />
     </div>
   );
 }
 
-// ─── Size select ──────────────────────────────────────────────────────────────
+function RadioCard({
+  label, sublabel, selected, onClick,
+}: {
+  label: string; sublabel?: string; selected: boolean; onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border-2 bg-white transition-all text-left ${
+        selected ? 'border-foreground' : 'border-black/10'
+      }`}
+    >
+      <div>
+        <p className="text-[17px] text-foreground">{label}</p>
+        {sublabel && <p className="text-xs text-black/40 mt-0.5">{sublabel}</p>}
+      </div>
+      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+        selected ? 'border-foreground' : 'border-black/20'
+      }`}>
+        {selected && <div className="w-3 h-3 rounded-full bg-foreground" />}
+      </div>
+    </button>
+  );
+}
 
-interface SizeSelectProps { system: SizeSystem; value: string; onChange: (v: string) => void; placeholder?: string; }
-
-function SizeSelect({ system, value, onChange, placeholder = 'Select size' }: SizeSelectProps) {
+function SizeCard({
+  system, value, onChange, label,
+}: {
+  system: SizeSystem; value: string; onChange: (v: string) => void; label: string;
+}) {
   const sizes = getSizes(system);
   return (
-    <select
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      className="w-full h-12 rounded-xl bg-background border border-input text-sm text-foreground px-3 outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-colors appearance-none"
-    >
-      <option value="">{placeholder}</option>
-      {sizes.map(s => <option key={s} value={s}>{formatSizeLabel(s, system)}</option>)}
-    </select>
+    <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
+      <p className="text-xs text-black/40 font-medium mb-1">{label}</p>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="w-full bg-transparent text-foreground text-[17px] outline-none appearance-none leading-snug"
+      >
+        <option value="">Select size</option>
+        {sizes.map(s => <option key={s} value={s}>{formatSizeLabel(s, system)}</option>)}
+      </select>
+    </div>
   );
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-interface FormState {
-  firstName:     string;
-  lastName:      string;
-  email:         string;
-  password:      string;
-  countryCode:   string;
-  city:          string;
-  sizeSystem:    SizeSystem;
-  leftFootSize:  string;
-  rightFootSize: string;
-  isAmputee:     boolean;
-  amputeeSide:   '' | 'left' | 'right';
-  neededFootSize: string;
-}
-
-const ALL_COUNTRIES = Country.getAllCountries().filter(c => SUPPORTED_COUNTRY_CODES.has(c.isoCode));
+const TOTAL_STEPS = 6;
 
 export default function SignupPage() {
   const router = useRouter();
@@ -178,8 +142,8 @@ export default function SignupPage() {
   const [step,      setStep]      = useState(1);
   const [loading,   setLoading]   = useState(false);
   const [error,     setError]     = useState('');
-  const [authError, setAuthError] = useState('');
   const [showPass,  setShowPass]  = useState(false);
+  const [footType,  setFootType]  = useState<FootType>(null);
 
   const [form, setForm] = useState<FormState>({
     firstName: '', lastName: '', email: '', password: '',
@@ -198,48 +162,55 @@ export default function SignupPage() {
     return City.getCitiesOfCountry(form.countryCode) ?? [];
   }, [form.countryCode]);
 
+  const strength = useMemo(() => getPasswordStrength(form.password), [form.password]);
+
   const update = (key: keyof FormState, value: string | boolean) =>
     setForm(p => ({ ...p, [key]: value }));
 
-  const strength = useMemo(() => getPasswordStrength(form.password), [form.password]);
+  const handleFootTypeSelect = (type: 'different' | 'amputee') => {
+    setFootType(type);
+    setForm(p => ({ ...p, isAmputee: type === 'amputee', amputeeSide: '', neededFootSize: '', leftFootSize: '', rightFootSize: '' }));
+  };
 
-  // Step 1 → Step 2
-  function handleStep1(e: FormEvent) {
-    e.preventDefault();
+  const canProceed = useMemo(() => {
+    switch (step) {
+      case 0: return true;
+      case 1: return form.firstName.trim().length > 0;
+      case 2: return /\S+@\S+\.\S+/.test(form.email);
+      case 3: return strength.score >= 2;
+      case 4: return !!form.countryCode && form.city.trim().length > 0;
+      case 5: return footType !== null;
+      case 6: {
+        if (footType === 'amputee') return !!form.amputeeSide && !!form.neededFootSize;
+        return !!form.leftFootSize && !!form.rightFootSize;
+      }
+      default: return false;
+    }
+  }, [step, form, footType, strength]);
+
+  function handleBack() {
     setError('');
-    if (!form.firstName.trim()) { setError('First name is required.'); return; }
-    if (!form.lastName.trim())  { setError('Last name is required.'); return; }
-    if (!form.email)            { setError('Email is required.'); return; }
-    if (!form.countryCode)      { setError('Please select your country.'); return; }
-    if (!form.city.trim())      { setError('Please enter your city.'); return; }
-    if (strength.score < 3)     { setError('Password is too weak. Please use a stronger password.'); return; }
-    setStep(2);
+    if (step === 1) router.push('/');
+    else setStep(s => s - 1);
   }
 
-  // Step 2 → submit
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  async function handleNext() {
+    if (!canProceed) return;
     setError('');
+    if (step < TOTAL_STEPS) { setStep(s => s + 1); return; }
+    await handleSubmit();
+  }
 
-    if (form.isAmputee) {
-      if (!form.amputeeSide || !form.neededFootSize) {
-        setError('Please select which foot you need and its size.'); return;
-      }
-    } else {
-      if (!form.leftFootSize || !form.rightFootSize) {
-        setError('Please select both foot sizes.'); return;
-      }
-    }
-
+  async function handleSubmit() {
     setLoading(true);
-    setAuthError('');
+    setError('');
 
     const leftUK   = form.isAmputee ? null : toUKCanonical(form.leftFootSize, form.sizeSystem);
     const rightUK  = form.isAmputee ? null : toUKCanonical(form.rightFootSize, form.sizeSystem);
     const neededUK = form.isAmputee ? toUKCanonical(form.neededFootSize, form.sizeSystem) : null;
-    const countryName  = ALL_COUNTRIES.find(c => c.isoCode === form.countryCode)?.name ?? form.countryCode;
-    const fullName     = `${form.firstName.trim()} ${form.lastName.trim()}`;
-    const locationStr  = `${form.city.trim()}, ${countryName}`;
+    const countryName = ALL_COUNTRIES.find(c => c.isoCode === form.countryCode)?.name ?? form.countryCode;
+    const fullName    = `${form.firstName.trim()}${form.lastName.trim() ? ' ' + form.lastName.trim() : ''}`;
+    const locationStr = `${form.city.trim()}, ${countryName}`;
 
     const { data, error: signUpErr } = await supabase.auth.signUp({
       email:    form.email,
@@ -258,7 +229,7 @@ export default function SignupPage() {
       },
     });
 
-    if (signUpErr) { setAuthError(signUpErr.message); setLoading(false); return; }
+    if (signUpErr) { setError(signUpErr.message); setLoading(false); return; }
 
     const profilePayload = {
       name:            fullName,
@@ -269,8 +240,7 @@ export default function SignupPage() {
     };
 
     if (data.session) {
-      const uid = data.session.user.id;
-      await supabase.from('users').upsert({ id: uid, email: form.email, ...profilePayload });
+      await supabase.from('users').upsert({ id: data.session.user.id, email: form.email, ...profilePayload });
       router.replace('/app');
     } else {
       sessionStorage.setItem('signup_profile', JSON.stringify(profilePayload));
@@ -282,301 +252,244 @@ export default function SignupPage() {
     setForm(p => ({ ...p, sizeSystem: sys, leftFootSize: '', rightFootSize: '', neededFootSize: '' }));
   };
 
-  const inputCls = 'w-full bg-background border border-input text-foreground placeholder-muted-foreground/50 text-sm px-4 py-3 rounded-xl outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-colors h-12';
-  const selectCls = 'w-full bg-background border border-input text-foreground text-sm px-4 py-3 rounded-xl outline-none focus:border-accent focus:ring-1 focus:ring-accent/30 transition-colors h-12 appearance-none';
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  // Steps 1–6
+  const stepConfig: Record<number, { title: string; subtitle: string }> = {
+    1: { title: "What's your name?",     subtitle: "This is how you'll appear on myotherpair." },
+    2: { title: "What's your email?",    subtitle: "Used for your account and verification. Never shared." },
+    3: { title: "Create a password",     subtitle: "At least 8 characters with a mix of letters and numbers." },
+    4: { title: "Where are you based?",  subtitle: "We'll show you listings near you." },
+    5: { title: "Tell us about your feet", subtitle: "This helps us find you the perfect match." },
+    6: { title: footType === 'amputee' ? "Which foot do you need?" : "What are your foot sizes?",
+         subtitle: footType === 'amputee'
+           ? "We'll find single shoes in your size."
+           : "We'll match you with someone who complements you." },
+  };
+
+  const { title, subtitle } = stepConfig[step] ?? { title: '', subtitle: '' };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
 
       {/* Top bar */}
-      <div className="px-4 py-4 flex items-center justify-between max-w-lg mx-auto w-full">
+      <div className="px-4 pt-12 pb-4 flex items-center gap-4">
         <button
-          onClick={() => (step === 1 ? router.push('/') : setStep(1))}
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          onClick={handleBack}
+          className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors"
+          aria-label="Back"
         >
-          <ArrowLeft className="h-4 w-4" /> Back
+          <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
-        <span className="font-display text-sm font-bold text-foreground tracking-[0.08em] uppercase">myotherpair</span>
-        <div className="w-14" />
-      </div>
-
-      <div className="flex-1 flex items-start justify-center px-4 pt-4 pb-8">
-        <div className="w-full max-w-sm animate-fade-in">
-
-          {/* Progress */}
-          <div className="flex gap-2 mb-8">
-            <div className="flex-1 h-1 rounded-full bg-accent" />
-            <div className={`flex-1 h-1 rounded-full transition-colors duration-300 ${step === 2 ? 'bg-accent' : 'bg-muted'}`} />
-          </div>
-
-          <span className="text-[10px] font-bold text-accent uppercase tracking-widest mb-2 block">
-            Step {step} of 2
-          </span>
-          <h1 className="font-display text-3xl font-bold text-foreground mb-1 leading-tight">
-            {step === 1 ? 'Create your account' : 'About your feet'}
-          </h1>
-          <p className="text-sm text-muted-foreground mb-8">
-            {step === 1 ? 'Join the community for perfectly matched shoes.' : 'So we can find your ideal match.'}
-          </p>
-
-          {/* ── Step 1 ─────────────────────────────────────────────────────── */}
-          {step === 1 && (
-            <form onSubmit={handleStep1} className="space-y-4">
-
-              {/* First / Last name */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-xs text-muted-foreground font-medium block">First name</label>
-                  <input
-                    value={form.firstName}
-                    onChange={e => update('firstName', e.target.value)}
-                    placeholder="Jane"
-                    required
-                    autoComplete="given-name"
-                    className={inputCls}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs text-muted-foreground font-medium block">Last name</label>
-                  <input
-                    value={form.lastName}
-                    onChange={e => update('lastName', e.target.value)}
-                    placeholder="Doe"
-                    required
-                    autoComplete="family-name"
-                    className={inputCls}
-                  />
-                </div>
-              </div>
-
-              {/* Email */}
-              <div className="space-y-1.5">
-                <label className="text-xs text-muted-foreground font-medium block">Email</label>
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={e => update('email', e.target.value)}
-                  placeholder="you@example.com"
-                  required
-                  autoComplete="email"
-                  className={inputCls}
-                />
-              </div>
-
-              {/* Password */}
-              <div className="space-y-1.5">
-                <label className="text-xs text-muted-foreground font-medium block">Password</label>
-                <div className="relative">
-                  <input
-                    type={showPass ? 'text' : 'password'}
-                    value={form.password}
-                    onChange={e => update('password', e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    autoComplete="new-password"
-                    className={inputCls + ' pr-11'}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPass(v => !v)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
-                    aria-label="Toggle password"
-                  >
-                    {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                <PasswordStrengthBar password={form.password} />
-              </div>
-
-              {/* Country */}
-              <div className="space-y-1.5">
-                <label className="text-xs text-muted-foreground font-medium block">Country</label>
-                <div className="relative">
-                  <select
-                    id="country"
-                    aria-label="Country"
-                    value={form.countryCode}
-                    onChange={e => { update('countryCode', e.target.value); update('city', ''); }}
-                    required
-                    className={selectCls + ' text-' + (form.countryCode ? 'foreground' : 'muted-foreground/50')}
-                  >
-                    <option value="">Select your country</option>
-                    {ALL_COUNTRIES.map(c => (
-                      <option key={c.isoCode} value={c.isoCode}>{c.flag} {c.name}</option>
-                    ))}
-                  </select>
-                  <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* City */}
-              <div className="space-y-1.5">
-                <label className="text-xs text-muted-foreground font-medium block">City</label>
-                <input
-                  list="city-options"
-                  value={form.city}
-                  onChange={e => update('city', e.target.value)}
-                  placeholder={form.countryCode ? 'Start typing your city…' : 'Select a country first'}
-                  disabled={!form.countryCode}
-                  required
-                  autoComplete="off"
-                  className={inputCls + ' disabled:opacity-40 disabled:cursor-not-allowed'}
-                />
-                {cities.length > 0 && (
-                  <datalist id="city-options">
-                    {cities.slice(0, 500).map(c => (
-                      <option key={`${c.name}-${c.stateCode}`} value={c.name} />
-                    ))}
-                  </datalist>
-                )}
-                {form.countryCode && form.city && cities.length > 0 && !cities.some(c => c.name.toLowerCase() === form.city.toLowerCase()) && (
-                  <p className="text-[10px] text-orange-400 mt-1">
-                    City not found in our list for this country — you can still proceed.
-                  </p>
-                )}
-              </div>
-
-              {error && (
-                <p className="text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-2.5">
-                  {error}
-                </p>
-              )}
-
-              <button
-                type="submit"
-                className="w-full gradient-warm text-accent-foreground text-sm font-semibold rounded-xl flex items-center justify-center gap-2 shadow-card hover:shadow-card-hover transition-all active:scale-[.98]"
-                style={{ height: 52 }}
-              >
-                Continue <ArrowRight className="h-4 w-4" />
-              </button>
-
-              <p className="text-sm text-muted-foreground text-center mt-4">
-                Already have an account?{' '}
-                <Link href="/login" className="text-accent font-semibold hover:underline">Log in</Link>
-              </p>
-            </form>
-          )}
-
-          {/* ── Step 2: foot sizes ───────────────────────────────────────── */}
-          {step === 2 && (
-            <form onSubmit={handleSubmit} className="space-y-4">
-
-              <div className="space-y-1.5">
-                <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-                  Sizing system <ConversionTooltip />
-                </label>
-                <SizeSystemToggle value={form.sizeSystem} onChange={changeSizeSystem} />
-              </div>
-
-              <div className="flex items-center gap-3 p-4 rounded-xl bg-muted/50 border border-border/30">
-                <input
-                  id="amputee"
-                  type="checkbox"
-                  checked={form.isAmputee}
-                  onChange={e => {
-                    const v = e.target.checked;
-                    setForm(p => ({ ...p, isAmputee: v, amputeeSide: '', neededFootSize: '', leftFootSize: '', rightFootSize: '' }));
-                  }}
-                  className="w-4 h-4 accent-[hsl(var(--accent))] cursor-pointer"
-                />
-                <div>
-                  <label htmlFor="amputee" className="text-sm text-foreground cursor-pointer font-medium">I am an amputee</label>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">We&apos;ll only ask for the foot you need a shoe for</p>
-                </div>
-              </div>
-
-              {form.isAmputee ? (
-                <>
-                  <div className="space-y-1.5">
-                    <label className="text-xs text-muted-foreground font-medium">Which foot do you need a shoe for?</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      {(['left', 'right'] as const).map(side => (
-                        <button
-                          key={side}
-                          type="button"
-                          onClick={() => update('amputeeSide', side)}
-                          className={`h-12 rounded-xl text-sm font-semibold border transition-all duration-200 flex items-center justify-center gap-2 ${
-                            form.amputeeSide === side
-                              ? 'bg-accent text-accent-foreground border-accent shadow-sm'
-                              : 'bg-muted/50 text-muted-foreground border-border/30 hover:border-border'
-                          }`}
-                        >
-                          <span className={`w-2 h-2 rounded-full ${side === 'left' ? 'bg-left-shoe' : 'bg-right-shoe'}`} />
-                          {side.charAt(0).toUpperCase() + side.slice(1)} foot
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  {form.amputeeSide && (
-                    <div className="space-y-1.5 animate-fade-in">
-                      <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-                        <span className={`w-2 h-2 rounded-full ${form.amputeeSide === 'left' ? 'bg-left-shoe' : 'bg-right-shoe'}`} />
-                        {form.amputeeSide.charAt(0).toUpperCase() + form.amputeeSide.slice(1)} foot size
-                      </label>
-                      <SizeSelect system={form.sizeSystem} value={form.neededFootSize} onChange={v => update('neededFootSize', v)} />
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-left-shoe" /> Left foot
-                      </label>
-                      <SizeSelect system={form.sizeSystem} value={form.leftFootSize} onChange={v => update('leftFootSize', v)} placeholder="Size" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-right-shoe" /> Right foot
-                      </label>
-                      <SizeSelect system={form.sizeSystem} value={form.rightFootSize} onChange={v => update('rightFootSize', v)} placeholder="Size" />
-                    </div>
-                  </div>
-                  {form.leftFootSize && form.rightFootSize && form.leftFootSize !== form.rightFootSize && (
-                    <div className="p-4 rounded-xl bg-match-green/[0.08] border border-match-green/20 animate-fade-in">
-                      <p className="text-xs font-semibold text-match-green flex items-center gap-2">
-                        <span>✨</span> Great — myotherpair is built for you!
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        We&apos;ll help you find single shoes that match each foot perfectly.
-                      </p>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {(error || authError) && (
-                <p className="text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-2.5">
-                  {error || authError}
-                </p>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full gradient-warm text-accent-foreground text-sm font-semibold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[.98] shadow-card hover:shadow-card-hover flex items-center justify-center gap-2"
-                style={{ height: 52 }}
-              >
-                {loading ? (
-                  <>
-                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    Creating account…
-                  </>
-                ) : 'Create account'}
-              </button>
-            </form>
-          )}
-
+        <div className="flex-1 h-[2px] bg-black/10 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-foreground rounded-full transition-all duration-500"
+            style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
+          />
         </div>
+        <div className="w-10" />
       </div>
+
+      {/* Content */}
+      <div className="flex-1 px-6 pt-8 pb-4">
+        <h1 className="font-display text-[1.9rem] font-bold text-foreground leading-tight tracking-[-0.02em] text-center mb-3">
+          {title}
+        </h1>
+        <p className="text-center text-black/40 text-[14px] mb-10 leading-relaxed max-w-xs mx-auto">
+          {subtitle}
+        </p>
+
+        {/* ── Step 1: Name ────────────────────────────────────────────────── */}
+        {step === 1 && (
+          <div className="space-y-3">
+            <CardInput label="First name" value={form.firstName} onChange={v => update('firstName', v)} placeholder="Your first name" autoComplete="given-name" />
+            <CardInput label="Last name (optional)" value={form.lastName} onChange={v => update('lastName', v)} placeholder="Your last name" autoComplete="family-name" />
+          </div>
+        )}
+
+        {/* ── Step 2: Email ───────────────────────────────────────────────── */}
+        {step === 2 && (
+          <div className="space-y-3">
+            <CardInput label="Your email" value={form.email} onChange={v => update('email', v)} type="email" placeholder="Enter your email" autoComplete="email" />
+            <button
+              type="button"
+              onClick={() => {}}
+              className="w-full flex items-start gap-3 bg-white rounded-2xl border border-black/10 px-5 py-4"
+            >
+              <div className="w-5 h-5 rounded border-2 border-black/20 mt-0.5 flex-shrink-0" />
+              <p className="text-[13px] text-black/40 text-left leading-relaxed">
+                Don't send me marketing communications about products and services
+              </p>
+            </button>
+          </div>
+        )}
+
+        {/* ── Step 3: Password ────────────────────────────────────────────── */}
+        {step === 3 && (
+          <div className="space-y-3">
+            <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
+              <p className="text-xs text-black/40 font-medium mb-1">Password</p>
+              <div className="flex items-center gap-2">
+                <input
+                  type={showPass ? 'text' : 'password'}
+                  value={form.password}
+                  onChange={e => update('password', e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete="new-password"
+                  className="flex-1 bg-transparent text-foreground text-[17px] outline-none placeholder-black/20"
+                />
+                <button type="button" onClick={() => setShowPass(v => !v)} className="text-black/30 hover:text-black/50 transition-colors">
+                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <PasswordStrengthBar password={form.password} />
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 4: Location ────────────────────────────────────────────── */}
+        {step === 4 && (
+          <div className="space-y-3">
+            <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
+              <p className="text-xs text-black/40 font-medium mb-1">Country</p>
+              <select
+                value={form.countryCode}
+                onChange={e => { update('countryCode', e.target.value); update('city', ''); }}
+                className="w-full bg-transparent text-foreground text-[17px] outline-none appearance-none leading-snug"
+              >
+                <option value="">Select your country</option>
+                {ALL_COUNTRIES.map(c => (
+                  <option key={c.isoCode} value={c.isoCode}>{c.flag} {c.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className={`bg-white rounded-2xl border border-black/10 px-5 py-4 transition-all ${!form.countryCode ? 'opacity-40' : ''}`}>
+              <p className="text-xs text-black/40 font-medium mb-1">City</p>
+              <input
+                list="city-options"
+                value={form.city}
+                onChange={e => update('city', e.target.value)}
+                placeholder={form.countryCode ? 'Start typing…' : 'Select a country first'}
+                disabled={!form.countryCode}
+                autoComplete="off"
+                className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder-black/20 disabled:cursor-not-allowed leading-snug"
+              />
+              {cities.length > 0 && (
+                <datalist id="city-options">
+                  {cities.slice(0, 500).map(c => <option key={`${c.name}-${c.stateCode}`} value={c.name} />)}
+                </datalist>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── Step 5: Foot type ───────────────────────────────────────────── */}
+        {step === 5 && (
+          <div className="space-y-3">
+            <RadioCard
+              label="My feet are different sizes"
+              sublabel="I need individual shoes for each foot"
+              selected={footType === 'different'}
+              onClick={() => handleFootTypeSelect('different')}
+            />
+            <RadioCard
+              label="I'm an amputee / limb different"
+              sublabel="I only need one shoe"
+              selected={footType === 'amputee'}
+              onClick={() => handleFootTypeSelect('amputee')}
+            />
+          </div>
+        )}
+
+        {/* ── Step 6: Sizes ───────────────────────────────────────────────── */}
+        {step === 6 && (
+          <div className="space-y-4">
+            {/* Size system toggle */}
+            <div className="flex gap-2">
+              {(['UK', 'US', 'EU'] as SizeSystem[]).map(sys => (
+                <button
+                  key={sys}
+                  type="button"
+                  onClick={() => changeSizeSystem(sys)}
+                  className={`flex-1 h-11 rounded-full text-sm font-semibold border-2 transition-all ${
+                    form.sizeSystem === sys ? 'bg-foreground text-background border-foreground' : 'bg-white text-foreground border-black/10'
+                  }`}
+                >
+                  {sys}
+                </button>
+              ))}
+            </div>
+
+            {footType === 'amputee' ? (
+              <>
+                <div className="space-y-3">
+                  <RadioCard
+                    label="Left foot"
+                    selected={form.amputeeSide === 'left'}
+                    onClick={() => update('amputeeSide', 'left')}
+                  />
+                  <RadioCard
+                    label="Right foot"
+                    selected={form.amputeeSide === 'right'}
+                    onClick={() => update('amputeeSide', 'right')}
+                  />
+                </div>
+                {form.amputeeSide && (
+                  <SizeCard
+                    system={form.sizeSystem}
+                    value={form.neededFootSize}
+                    onChange={v => update('neededFootSize', v)}
+                    label={`${form.amputeeSide.charAt(0).toUpperCase() + form.amputeeSide.slice(1)} foot size`}
+                  />
+                )}
+              </>
+            ) : (
+              <div className="space-y-3">
+                <SizeCard system={form.sizeSystem} value={form.leftFootSize} onChange={v => update('leftFootSize', v)} label="Left foot size" />
+                <SizeCard system={form.sizeSystem} value={form.rightFootSize} onChange={v => update('rightFootSize', v)} label="Right foot size" />
+                {form.leftFootSize && form.rightFootSize && form.leftFootSize !== form.rightFootSize && (
+                  <div className="px-5 py-4 rounded-2xl bg-white border border-green-200 flex items-start gap-3">
+                    <span className="text-green-500 text-lg leading-none">✓</span>
+                    <div>
+                      <p className="text-[13px] font-semibold text-green-700">Great — myotherpair is built for you!</p>
+                      <p className="text-[12px] text-black/40 mt-0.5">We'll find someone who's your complement.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {error && (
+          <div className="mt-4 px-4 py-3 rounded-2xl bg-red-50 border border-red-100">
+            <p className="text-[13px] text-red-600">{error}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom action */}
+      <div className="px-6 pb-12 pt-4">
+        <button
+          onClick={handleNext}
+          disabled={!canProceed || loading}
+          className="w-full h-14 rounded-full bg-foreground text-background text-[15px] font-semibold disabled:opacity-25 transition-opacity active:opacity-80 flex items-center justify-center gap-2"
+        >
+          {loading ? (
+            <>
+              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Creating account…
+            </>
+          ) : step < TOTAL_STEPS ? (
+            <>Continue <ChevronRight className="w-4 h-4" /></>
+          ) : 'Create account'}
+        </button>
+
+      </div>
+
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, type KeyboardEvent, type ClipboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
-import { ArrowLeft } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 
 export default function VerifyOtpPage() {
   const router = useRouter();
@@ -80,10 +80,9 @@ export default function VerifyOtpPage() {
       return;
     }
 
-    // Email verified — now safely create the user profile from stored signup data
-    const uid         = data.session.user.id;
-    const profileRaw  = sessionStorage.getItem('signup_profile');
-    const profile     = profileRaw ? JSON.parse(profileRaw) : null;
+    const uid        = data.session.user.id;
+    const profileRaw = sessionStorage.getItem('signup_profile');
+    const profile    = profileRaw ? JSON.parse(profileRaw) : null;
 
     if (profile) {
       await supabase.from('users').upsert({
@@ -97,7 +96,6 @@ export default function VerifyOtpPage() {
       });
       sessionStorage.removeItem('signup_profile');
     } else {
-      // Fallback: create minimal profile from auth metadata
       const meta = data.session.user.user_metadata;
       await supabase.from('users').upsert({
         id:    uid,
@@ -123,87 +121,85 @@ export default function VerifyOtpPage() {
     <div className="min-h-screen bg-background flex flex-col">
 
       {/* Top bar */}
-      <div className="px-4 py-4 flex items-center justify-between max-w-lg mx-auto w-full">
+      <div className="px-4 pt-12 pb-4 flex items-center">
         <button
           onClick={() => router.push('/signup')}
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors"
+          aria-label="Back"
         >
-          <ArrowLeft className="h-4 w-4" /> Back
+          <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
-        <span className="font-display text-sm font-bold text-foreground tracking-[0.08em] uppercase">
-          myotherpair
-        </span>
-        <div className="w-14" />
       </div>
 
-      <div className="flex-1 flex items-start justify-center px-4 pt-8 pb-8">
-        <div className="w-full max-w-sm animate-fade-in text-center">
+      {/* Content */}
+      <div className="flex-1 px-6 pt-6 pb-4">
+        <p className="text-xs font-semibold tracking-[0.2em] uppercase text-black/30 mb-4 text-center">myotherpair</p>
+        <h1 className="font-display text-[2rem] font-bold text-foreground leading-tight tracking-[-0.02em] text-center mb-2">
+          Check your email
+        </h1>
+        <p className="text-center text-black/40 text-[14px] mb-1 leading-relaxed">
+          We sent a 6-digit code to
+        </p>
+        <p className="text-center text-foreground text-[14px] font-semibold mb-10 break-all">
+          {email}
+        </p>
 
-          <span className="text-5xl block mb-4">📬</span>
-          <h1 className="font-display text-3xl font-bold text-foreground mb-2">Check your email</h1>
-          <p className="text-sm text-muted-foreground mb-2">We sent a 6-digit code to</p>
-          <p className="text-sm font-semibold text-foreground mb-8 break-all">{email}</p>
-
-          {/* 6-digit OTP boxes */}
-          <div className="flex justify-center gap-2.5 mb-6">
-            {digits.map((d, i) => (
-              <input
-                key={i}
-                ref={r => { refs.current[i] = r; }}
-                type="text"
-                inputMode="numeric"
-                maxLength={2}
-                value={d}
-                onChange={e => handleChange(e.target.value, i)}
-                onKeyDown={e => handleKeyDown(e, i)}
-                onPaste={i === 0 ? handlePaste : undefined}
-                onFocus={e => e.target.select()}
-                className={`w-12 h-14 rounded-xl border-2 text-center text-xl font-bold text-foreground bg-background outline-none transition-all duration-150 ${
-                  d
-                    ? 'border-accent bg-accent/10'
-                    : 'border-border focus:border-accent/60 focus:ring-1 focus:ring-accent/20'
-                }`}
-              />
-            ))}
-          </div>
-
-          {error && (
-            <p className="text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-2.5 mb-4">
-              {error}
-            </p>
-          )}
-
-          <button
-            onClick={handleVerify}
-            disabled={loading || !filled}
-            className="w-full gradient-warm text-accent-foreground text-sm font-semibold rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-[.98] shadow-card hover:shadow-card-hover flex items-center justify-center gap-2 mb-4"
-            style={{ height: 52 }}
-          >
-            {loading ? (
-              <>
-                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                Verifying…
-              </>
-            ) : 'Verify email'}
-          </button>
-
-          <button
-            onClick={handleResend}
-            disabled={resending || resent}
-            className={`text-sm transition-colors ${
-              resent
-                ? 'text-green-500'
-                : 'text-muted-foreground hover:text-foreground'
-            } disabled:cursor-not-allowed`}
-          >
-            {resent ? '✓ Code resent!' : resending ? 'Sending…' : "Didn't receive it? Resend code"}
-          </button>
-
+        {/* OTP boxes */}
+        <div className="flex justify-center gap-2.5 mb-6">
+          {digits.map((d, i) => (
+            <input
+              key={i}
+              ref={r => { refs.current[i] = r; }}
+              type="text"
+              inputMode="numeric"
+              maxLength={2}
+              value={d}
+              onChange={e => handleChange(e.target.value, i)}
+              onKeyDown={e => handleKeyDown(e, i)}
+              onPaste={i === 0 ? handlePaste : undefined}
+              onFocus={e => e.target.select()}
+              className={`w-12 h-14 rounded-2xl border-2 text-center text-xl font-bold text-foreground bg-white outline-none transition-all duration-150 ${
+                d
+                  ? 'border-foreground'
+                  : 'border-black/10 focus:border-foreground/40'
+              }`}
+            />
+          ))}
         </div>
+
+        {error && (
+          <div className="px-4 py-3 rounded-2xl bg-red-50 border border-red-100 mb-4">
+            <p className="text-[13px] text-red-600 text-center">{error}</p>
+          </div>
+        )}
+
+        <button
+          onClick={handleVerify}
+          disabled={loading || !filled}
+          className="w-full h-14 rounded-full bg-foreground text-background text-[15px] font-semibold disabled:opacity-30 transition-opacity active:opacity-80 flex items-center justify-center gap-2 mb-6"
+        >
+          {loading ? (
+            <>
+              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Verifying…
+            </>
+          ) : 'Verify email'}
+        </button>
+
+        <button
+          onClick={handleResend}
+          disabled={resending || resent}
+          className={`w-full text-center text-[13px] transition-colors ${
+            resent ? 'text-green-600' : 'text-black/40 hover:text-foreground'
+          } disabled:cursor-not-allowed`}
+        >
+          {resent ? 'Code resent!' : resending ? 'Sending…' : "Didn't receive it? Resend code"}
+        </button>
       </div>
+
     </div>
   );
 }
