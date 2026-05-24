@@ -34,8 +34,8 @@ export default function SplashPage() {
 
       {/* Full-screen background image */}
       <Image
-        src="https://images.unsplash.com/photo-1756487044251-d75b6c2e0fcf?auto=format&fit=crop&w=800&q=80"
-        alt="Cream lace sneakers close-up"
+        src="https://images.pexels.com/photos/1020372/pexels-photo-1020372.jpeg?auto=compress&cs=tinysrgb&w=800"
+        alt="Pink sneakers"
         fill
         className="object-cover object-center"
         priority
