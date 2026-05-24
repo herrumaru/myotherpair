@@ -391,36 +391,38 @@ export default function BrowsePage() {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Sticky header + search */}
-      <header className="sticky top-0 z-40 glass-nav border-b border-border/50 px-4 pt-3 pb-3">
-        <div className="flex items-center justify-between mb-3 max-w-lg mx-auto">
-          <h1 className="font-display text-lg font-bold text-foreground">Browse</h1>
-          <Button
-            variant={showFilters ? 'accent' : 'outline'}
-            size="sm"
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-black/8 px-4 pt-0 pb-3">
+        <div className="flex items-center justify-between max-w-lg mx-auto h-14">
+          <h1 className="font-display text-[17px] font-bold text-foreground tracking-[-0.01em]">Browse</h1>
+          <button
             onClick={() => setShowFilters(v => !v)}
-            className="gap-1.5 rounded-full relative"
+            className={`relative flex items-center gap-1.5 h-9 px-4 rounded-full text-[13px] font-semibold border-2 transition-all ${
+              showFilters
+                ? 'bg-foreground text-background border-foreground'
+                : 'bg-transparent text-foreground border-black/15 hover:border-black/30'
+            }`}
           >
-            {showFilters ? <X className="h-4 w-4" /> : <SlidersHorizontal className="h-4 w-4" />}
+            {showFilters ? <X className="h-3.5 w-3.5" /> : <SlidersHorizontal className="h-3.5 w-3.5" />}
             Filters
             {activeFilterCount > 0 && !showFilters && (
-              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full gradient-warm text-accent-foreground text-[10px] font-bold flex items-center justify-center">
+              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-foreground text-background text-[10px] font-bold flex items-center justify-center">
                 {activeFilterCount}
               </span>
             )}
-          </Button>
+          </button>
         </div>
         <div className="relative max-w-lg mx-auto">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-black/30" />
           <input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search brand or model..."
-            className="w-full pl-9 pr-3 h-10 bg-secondary/50 border border-border/30 rounded-xl text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-accent/50 transition-colors"
+            placeholder="Search brand or model…"
+            className="w-full pl-10 pr-4 h-10 bg-white border border-black/10 rounded-2xl text-[14px] text-foreground placeholder:text-black/25 outline-none focus:border-black/25 transition-colors"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-muted-foreground"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-black/25 hover:text-foreground"
             >
               <X className="h-3.5 w-3.5" />
             </button>

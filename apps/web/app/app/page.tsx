@@ -242,10 +242,9 @@ export default function DiscoverPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background pb-24">
-        <header className="sticky top-0 z-40 border-b border-border/30">
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-xl" />
-          <div className="relative flex items-center justify-between px-5 py-3.5 max-w-lg mx-auto">
-            <h1 className="font-display text-[15px] font-bold tracking-[0.1em] uppercase text-foreground">myotherpair</h1>
+        <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-black/8">
+          <div className="flex items-center justify-center px-5 h-14 max-w-lg mx-auto">
+            <h1 className="font-display text-[15px] font-bold tracking-[0.12em] uppercase text-foreground">myotherpair</h1>
           </div>
         </header>
         <div className="max-w-lg mx-auto px-5 pt-5">
@@ -269,13 +268,12 @@ export default function DiscoverPage() {
       )}
 
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-border/30">
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-xl" />
-        <div className="relative flex items-center justify-between px-5 py-3.5 max-w-lg mx-auto">
-          <h1 className="font-display text-[15px] font-bold tracking-[0.1em] uppercase text-foreground">
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-black/8">
+        <div className="relative flex items-center justify-center px-5 h-14 max-w-lg mx-auto">
+          <h1 className="font-display text-[15px] font-bold tracking-[0.12em] uppercase text-foreground">
             myotherpair
           </h1>
-          <span className="text-[11px] text-muted-foreground/50 tracking-[0.15em] uppercase">
+          <span className="absolute right-5 text-[11px] text-black/25 font-medium">
             {availableListings.length} left
           </span>
         </div>

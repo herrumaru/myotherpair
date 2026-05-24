@@ -61,13 +61,13 @@ interface MenuItemProps {
 function MenuItem({ icon, label, href, value, onClick, destructive }: MenuItemProps) {
   const content = (
     <div
-      className={`flex items-center gap-4 px-6 py-4 hover:bg-secondary/30 transition-colors cursor-pointer ${destructive ? 'text-destructive' : ''}`}
+      className={`flex items-center gap-4 px-5 py-4 hover:bg-black/[0.02] active:bg-black/[0.04] transition-colors cursor-pointer`}
       onClick={onClick}
     >
-      <span className={destructive ? 'text-destructive/60' : 'text-muted-foreground/50'}>{icon}</span>
-      <span className={`flex-1 text-[14px] font-medium ${destructive ? 'text-destructive' : 'text-foreground'}`}>{label}</span>
-      {value && <span className="text-[12px] text-muted-foreground/40">{value}</span>}
-      <ChevronRight className="h-4 w-4 text-muted-foreground/20" />
+      <span className={`flex-shrink-0 ${destructive ? 'text-red-400' : 'text-black/30'}`}>{icon}</span>
+      <span className={`flex-1 text-[14px] font-medium ${destructive ? 'text-red-500' : 'text-foreground'}`}>{label}</span>
+      {value && <span className="text-[13px] text-black/30 font-medium">{value}</span>}
+      <ChevronRight className="h-4 w-4 text-black/15" />
     </div>
   );
 
@@ -162,16 +162,15 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background pb-24">
-        <header className="sticky top-0 z-40 border-b border-border/30">
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-xl" />
-          <div className="relative flex items-center justify-center px-6 py-4 max-w-lg mx-auto">
-            <h1 className="text-[14px] font-semibold text-foreground tracking-[0.05em] uppercase">{t.profile_title}</h1>
+        <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-black/8">
+          <div className="flex items-center justify-center px-6 h-14 max-w-lg mx-auto">
+            <h1 className="text-[14px] font-semibold text-foreground tracking-[0.08em] uppercase">{t.profile_title}</h1>
           </div>
         </header>
         <div className="flex flex-col items-center px-5 pt-8 pb-4">
-          <div className="w-14 h-14 rounded-full bg-muted animate-pulse mb-4" />
-          <div className="h-5 w-32 rounded-lg bg-muted animate-pulse mb-2" />
-          <div className="h-3 w-24 rounded-lg bg-muted animate-pulse" />
+          <div className="w-16 h-16 rounded-full bg-black/8 animate-pulse mb-4" />
+          <div className="h-5 w-32 rounded-lg bg-black/8 animate-pulse mb-2" />
+          <div className="h-3 w-24 rounded-lg bg-black/8 animate-pulse" />
         </div>
       </div>
     );
@@ -180,58 +179,57 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-border/30">
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-xl" />
-        <div className="relative flex items-center justify-center px-6 py-4 max-w-lg mx-auto">
-          <h1 className="text-[14px] font-semibold text-foreground tracking-[0.05em] uppercase">{t.profile_title}</h1>
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-black/8">
+        <div className="flex items-center justify-center px-6 h-14 max-w-lg mx-auto">
+          <h1 className="text-[14px] font-semibold text-foreground tracking-[0.08em] uppercase">{t.profile_title}</h1>
         </div>
       </header>
 
       <div className="max-w-lg mx-auto">
         {/* User card */}
-        <motion.div {...fadeUp(0)} className="px-5 pt-5 pb-2">
-          <div className="border border-border/40 bg-card p-5">
+        <motion.div {...fadeUp(0)} className="px-5 pt-6 pb-2">
+          <div className="bg-white rounded-2xl border border-black/8 p-5 shadow-sm">
             <div className="flex items-center gap-4">
               <div className="relative">
                 {profile.avatar_url ? (
                   <img
                     src={profile.avatar_url}
                     alt={name}
-                    className="w-14 h-14 rounded-full object-cover border-2 border-border/30 grayscale hover:grayscale-0 transition-all duration-500"
+                    className="w-[60px] h-[60px] rounded-full object-cover border-2 border-black/8"
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center text-xl font-bold text-accent-foreground border-2 border-border/30">
+                  <div className="w-[60px] h-[60px] rounded-full bg-black/8 flex items-center justify-center text-[20px] font-bold text-foreground border-2 border-black/8">
                     {initials}
                   </div>
                 )}
-                <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-match-green border-[2.5px] border-card" />
+                <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-green-500 border-[2.5px] border-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <h2 className="font-display text-lg font-bold text-foreground tracking-[-0.01em]">
+                <h2 className="font-display text-[1.2rem] font-bold text-foreground tracking-[-0.01em]">
                   {name || 'No name set'}
                 </h2>
                 {profile.location && (
-                  <div className="flex items-center gap-1.5 text-muted-foreground/40 mt-0.5">
+                  <div className="flex items-center gap-1 text-black/35 mt-0.5">
                     <MapPin className="h-3 w-3" />
-                    <span className="text-[11px] tracking-[0.08em] uppercase">{profile.location}</span>
+                    <span className="text-[12px]">{profile.location}</span>
                   </div>
                 )}
               </div>
-              <Link href="/app/profile/edit" className="text-muted-foreground/30 hover:text-accent transition-colors">
-                <Edit className="h-4 w-4" />
+              <Link href="/app/profile/edit" className="w-8 h-8 rounded-full bg-black/5 flex items-center justify-center hover:bg-black/10 transition-colors">
+                <Edit className="h-3.5 w-3.5 text-black/50" />
               </Link>
             </div>
 
             {/* Quick stats */}
-            <div className="flex items-center gap-6 mt-4 pt-4 border-t border-border/20">
+            <div className="flex items-center mt-5 pt-4 border-t border-black/6">
               {[
                 { label: t.profile_stat_listings, value: stats.listings },
                 { label: t.profile_stat_matches,  value: stats.matches  },
                 { label: t.profile_stat_sizes,    value: leftSize && rightSize ? `L · R` : leftSize ? `L` : rightSize ? `R` : '—' },
               ].map((stat, i) => (
-                <div key={i} className="text-center flex-1">
-                  <p className="text-[13px] font-bold text-foreground leading-none">{stat.value}</p>
-                  <p className="text-[9px] text-muted-foreground/35 tracking-[0.15em] uppercase mt-1.5">{stat.label}</p>
+                <div key={i} className={`text-center flex-1 ${i > 0 ? 'border-l border-black/6' : ''}`}>
+                  <p className="text-[16px] font-bold text-foreground leading-none">{stat.value}</p>
+                  <p className="text-[10px] text-black/30 font-medium tracking-[0.1em] uppercase mt-1.5">{stat.label}</p>
                 </div>
               ))}
             </div>
@@ -239,12 +237,12 @@ export default function ProfilePage() {
         </motion.div>
 
         {/* Search status */}
-        <motion.div {...fadeUp(0.05)} className="px-5 pb-2 pt-1">
-          <div className="border border-accent/15 bg-accent/[0.03] px-5 py-4">
+        <motion.div {...fadeUp(0.05)} className="px-5 pb-2 pt-2">
+          <div className="bg-white rounded-2xl border border-black/8 px-5 py-4">
             <div className="flex items-start gap-3">
-              <Search className="h-3.5 w-3.5 text-accent mt-0.5 flex-shrink-0" />
+              <Search className="h-3.5 w-3.5 text-black/30 mt-0.5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] text-accent/50 tracking-[0.25em] uppercase font-medium mb-1">{t.profile_searching_for}</p>
+                <p className="text-[10px] text-black/30 tracking-[0.2em] uppercase font-semibold mb-1">{t.profile_searching_for}</p>
                 {editingStatus ? (
                   <div className="flex items-center gap-2">
                     <input
@@ -281,27 +279,27 @@ export default function ProfilePage() {
         </motion.div>
 
         {/* CTA Banner */}
-        <motion.div {...fadeUp(0.08)} className="px-5 pt-1 pb-3">
+        <motion.div {...fadeUp(0.08)} className="px-5 pt-1 pb-2">
           <Link href="/app/create">
-            <div className="relative overflow-hidden gradient-warm p-5 flex items-center gap-4">
+            <div className="relative overflow-hidden bg-foreground rounded-2xl p-5 flex items-center gap-4">
               <div className="flex-1">
-                <h3 className="font-display text-[1.1rem] font-bold text-accent-foreground mb-1">{t.profile_list_shoe}</h3>
-                <p className="text-[12px] text-accent-foreground/70 leading-relaxed mb-3">{t.profile_list_subtitle}</p>
-                <div className="inline-flex items-center gap-1.5 bg-accent-foreground/10 backdrop-blur-sm px-3 py-1.5 text-[10px] tracking-[0.12em] uppercase font-semibold text-accent-foreground">
+                <h3 className="font-display text-[1.1rem] font-bold text-background mb-1">{t.profile_list_shoe}</h3>
+                <p className="text-[12px] text-background/60 leading-relaxed mb-3">{t.profile_list_subtitle}</p>
+                <div className="inline-flex items-center gap-1.5 bg-background/10 px-3 py-1.5 rounded-full text-[11px] tracking-[0.08em] uppercase font-semibold text-background">
                   <PlusCircle className="h-3 w-3" />
                   {t.profile_list_now}
                 </div>
               </div>
-              <div className="w-20 h-20 rounded-lg bg-accent-foreground/10 flex items-center justify-center">
-                <ShoppingBag className="h-8 w-8 text-accent-foreground/40" />
+              <div className="w-16 h-16 rounded-2xl bg-background/10 flex items-center justify-center">
+                <ShoppingBag className="h-7 w-7 text-background/40" />
               </div>
             </div>
           </Link>
         </motion.div>
 
         {/* Saved Listings */}
-        <motion.div {...fadeUp(0.09)} className="px-5 pt-1 pb-3">
-          <div className="border border-border/40 bg-card p-4">
+        <motion.div {...fadeUp(0.09)} className="px-5 pt-1 pb-2">
+          <div className="bg-white rounded-2xl border border-black/8 p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Heart className="h-3.5 w-3.5 text-accent" />
@@ -381,31 +379,25 @@ export default function ProfilePage() {
         </motion.div>
 
         {/* Menu sections */}
-        <motion.div {...fadeUp(0.1)} className="mt-2">
+        <motion.div {...fadeUp(0.1)} className="mt-4 px-5 space-y-3 pb-4">
           {/* Section 1 */}
-          <div className="border-t border-border/20">
+          <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
             <MenuItem icon={<ShoppingBag className="h-[18px] w-[18px]" />} label={t.profile_my_listings} href="/app/listings" value={`${stats.listings}`} />
-            <div className="border-t border-border/10" />
+            <div className="border-t border-black/5 mx-5" />
             <MenuItem icon={<MessageCircle className="h-[18px] w-[18px]" />} label={t.profile_my_matches} href="/app/messages" value={`${stats.matches}`} />
           </div>
 
-          {/* Spacer */}
-          <div className="h-2 bg-secondary/30" />
-
           {/* Section 2 */}
-          <div className="border-t border-border/20">
+          <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
             <MenuItem icon={<Edit className="h-[18px] w-[18px]" />}       label={t.profile_edit_profile}  href="/app/profile/edit" />
-            <div className="border-t border-border/10" />
+            <div className="border-t border-black/5 mx-5" />
             <MenuItem icon={<Settings className="h-[18px] w-[18px]" />}   label={t.profile_settings}      href="/app/profile/edit" />
           </div>
 
-          {/* Spacer */}
-          <div className="h-2 bg-secondary/30" />
-
           {/* Preferences */}
-          <div className="border-t border-border/20">
-            <div className="flex items-center gap-4 px-6 py-4">
-              <span className="text-muted-foreground/50">
+          <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
+            <div className="flex items-center gap-4 px-5 py-4">
+              <span className="text-black/30">
                 {theme === 'dark' ? (
                   <svg className="h-[18px] w-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
@@ -422,19 +414,19 @@ export default function ProfilePage() {
               <button
                 type="button"
                 onClick={toggleTheme}
-                className={`w-10 h-6 rounded-full flex items-center px-0.5 transition-colors ${theme === 'dark' ? 'bg-accent' : 'bg-muted'}`}
+                className={`w-11 h-6 rounded-full flex items-center px-0.5 transition-colors ${theme === 'dark' ? 'bg-foreground' : 'bg-black/15'}`}
               >
-                <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${theme === 'dark' ? 'translate-x-4' : 'translate-x-0'}`} />
+                <div className={`w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${theme === 'dark' ? 'translate-x-5' : 'translate-x-0'}`} />
               </button>
             </div>
-            <div className="border-t border-border/10" />
-            <div className="flex items-center gap-4 px-6 py-4">
-              <span className="text-muted-foreground/50 text-base leading-none">🌐</span>
+            <div className="border-t border-black/5 mx-5" />
+            <div className="flex items-center gap-4 px-5 py-4">
+              <span className="text-black/30 text-base leading-none">🌐</span>
               <span className="flex-1 text-[14px] font-medium text-foreground">{t.profile_language}</span>
               <select
                 value={locale}
                 onChange={e => setLocale(e.target.value)}
-                className="text-[13px] text-foreground bg-card border border-border/40 rounded-lg px-2 py-1 outline-none focus:border-accent/50 transition-colors appearance-none cursor-pointer pr-6"
+                className="text-[13px] text-foreground bg-black/5 border border-black/8 rounded-xl px-2 py-1.5 outline-none transition-colors appearance-none cursor-pointer pr-6"
                 style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
               >
                 <optgroup label="Americas">
@@ -456,13 +448,10 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Spacer */}
-          <div className="h-2 bg-secondary/30" />
-
           {/* Section 3 */}
-          <div className="border-t border-border/20">
+          <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
             <MenuItem icon={<HelpCircle className="h-[18px] w-[18px]" />} label={t.profile_help} />
-            <div className="border-t border-border/10" />
+            <div className="border-t border-black/5 mx-5" />
             <MenuItem
               icon={<LogOut className="h-[18px] w-[18px]" />}
               label={t.profile_logout}
@@ -471,11 +460,9 @@ export default function ProfilePage() {
             />
           </div>
 
-          <div className="h-2 bg-secondary/30" />
-
           {/* Footer */}
-          <div className="py-6 text-center">
-            <p className="text-[10px] text-muted-foreground/25 tracking-[0.15em] uppercase">
+          <div className="py-4 text-center">
+            <p className="text-[10px] text-black/20 tracking-[0.15em] uppercase">
               Privacy Policy · Terms & Conditions
             </p>
           </div>

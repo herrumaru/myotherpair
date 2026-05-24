@@ -209,7 +209,7 @@ export default function VerifyOtpPage() {
         )}
 
         {/* OTP boxes */}
-        <div className="flex gap-2 mb-8">
+        <div className="flex gap-1.5 mb-8 w-full max-w-[340px] mx-auto">
           {digits.map((d, i) => (
             <input
               key={i}
@@ -222,7 +222,7 @@ export default function VerifyOtpPage() {
               onKeyDown={e => handleKeyDown(e, i)}
               onPaste={i === 0 ? handlePaste : undefined}
               onFocus={e => e.target.select()}
-              className={`flex-1 h-[64px] rounded-2xl border-2 text-center text-2xl font-bold text-foreground outline-none transition-all duration-150 ${
+              className={`flex-1 min-w-0 h-[60px] rounded-xl border-2 text-center text-[22px] font-bold text-foreground outline-none transition-all duration-150 ${
                 d
                   ? 'bg-white border-foreground'
                   : 'bg-black/[0.06] border-transparent focus:border-foreground/30 focus:bg-white'

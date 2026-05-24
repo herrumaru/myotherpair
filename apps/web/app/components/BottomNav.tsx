@@ -12,36 +12,38 @@ export default function BottomNav() {
   const items = [
     { to: '/app',          icon: Home,          label: t.nav_home     },
     { to: '/app/browse',   icon: Search,        label: t.nav_browse   },
-    { to: '/app/create',   icon: PlusCircle,    label: t.nav_list, isAction: true },
+    { to: '/app/create',   icon: PlusCircle,    label: t.nav_list     },
     { to: '/app/messages', icon: MessageCircle, label: t.nav_chat     },
     { to: '/app/profile',  icon: User,          label: t.nav_profile  },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/90 backdrop-blur-xl border-t border-border/50 pb-[env(safe-area-inset-bottom)]">
-      <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
-        {items.map(({ to, icon: Icon, label, isAction }) => {
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-black/8 pb-[env(safe-area-inset-bottom)]">
+      <div className="flex items-center justify-around h-[58px] max-w-lg mx-auto px-2">
+        {items.map(({ to, icon: Icon, label }) => {
           const active = pathname === to || (to !== '/app' && pathname.startsWith(to));
           return (
             <Link
               key={to}
               href={to}
-              className={`relative flex flex-col items-center gap-0.5 px-3 py-2 text-[10px] font-medium transition-all duration-200 ${
-                active ? 'text-accent' : 'text-muted-foreground hover:text-foreground'
-              }`}
+              className="relative flex flex-col items-center justify-center gap-[3px] flex-1 py-2"
             >
-              {isAction ? (
-                <div className="w-10 h-10 rounded-2xl gradient-warm flex items-center justify-center shadow-sm -mt-3">
-                  <Icon className="h-5 w-5 text-accent-foreground" />
-                </div>
-              ) : (
-                <div className={`relative p-1.5 rounded-xl transition-all duration-200 ${active ? 'bg-accent/10' : ''}`}>
-                  <Icon className={`h-5 w-5 transition-transform duration-200 ${active ? 'scale-110' : ''}`} />
-                </div>
-              )}
-              <span className={`transition-all duration-200 ${isAction ? '-mt-0.5' : ''} ${active ? 'font-semibold' : ''}`}>
+              <Icon
+                className={`w-[22px] h-[22px] transition-all duration-200 ${
+                  active ? 'text-foreground scale-105' : 'text-black/30'
+                }`}
+                strokeWidth={active ? 2.5 : 1.75}
+                fill={active ? 'currentColor' : 'none'}
+                style={{ fillOpacity: active ? 0.12 : 0 }}
+              />
+              <span className={`text-[9px] font-medium tracking-wide transition-colors duration-200 ${
+                active ? 'text-foreground font-semibold' : 'text-black/30'
+              }`}>
                 {label}
               </span>
+              {active && (
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-[2px] bg-foreground rounded-full" />
+              )}
             </Link>
           );
         })}

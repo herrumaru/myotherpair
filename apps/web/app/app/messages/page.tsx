@@ -98,8 +98,8 @@ export default function MessagesPage() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <header className="sticky top-0 z-40 glass-nav border-b border-border/50 px-4 py-3.5">
-        <h1 className="font-display text-lg font-bold text-foreground">Messages</h1>
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-black/8 px-5 flex items-center h-14">
+        <h1 className="font-display text-[17px] font-bold text-foreground tracking-[-0.01em]">Messages</h1>
       </header>
 
       <div className="max-w-lg mx-auto">
@@ -120,23 +120,23 @@ export default function MessagesPage() {
             <Link
               key={conv.id}
               href={`/app/messages/${conv.id}`}
-              className={`flex items-center gap-3 px-4 py-4 border-b border-border/30 hover:bg-muted/30 transition-colors opacity-0 animate-fade-in stagger-${Math.min(i + 1, 6)}`}
+              className={`flex items-center gap-3.5 px-5 py-4 border-b border-black/6 hover:bg-black/[0.02] active:bg-black/[0.04] transition-colors opacity-0 animate-fade-in stagger-${Math.min(i + 1, 6)}`}
             >
               <div className="flex-shrink-0">
                 {conv.otherUserAvatar ? (
-                  <img src={conv.otherUserAvatar} alt="" className="w-12 h-12 rounded-xl object-cover" />
+                  <img src={conv.otherUserAvatar} alt="" className="w-[46px] h-[46px] rounded-full object-cover" />
                 ) : (
-                  <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center text-base font-bold text-accent">
+                  <div className="w-[46px] h-[46px] rounded-full bg-black/8 flex items-center justify-center text-[15px] font-bold text-foreground">
                     {conv.otherUserName[0]}
                   </div>
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <p className="font-semibold text-sm text-foreground">{conv.otherUserName}</p>
-                  <span className="text-[10px] text-muted-foreground">{conv.lastMessageTime}</span>
+                <div className="flex items-center justify-between mb-0.5">
+                  <p className="font-semibold text-[14px] text-foreground">{conv.otherUserName}</p>
+                  <span className="text-[11px] text-black/30">{conv.lastMessageTime}</span>
                 </div>
-                <p className="text-xs text-muted-foreground truncate mt-0.5">
+                <p className="text-[13px] text-black/40 truncate">
                   {conv.lastMessage || 'Start the conversation'}
                 </p>
               </div>
