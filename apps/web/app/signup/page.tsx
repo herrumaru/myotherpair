@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, type FormEvent } from 'react';
+import { useState, useEffect, useMemo, useRef, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import { ChevronLeft, ChevronRight, Eye, EyeOff, Check } from 'lucide-react';
@@ -128,6 +128,74 @@ function SizeCard({
         <option value="">Select size</option>
         {sizes.map(s => <option key={s} value={s}>{formatSizeLabel(s, system)}</option>)}
       </select>
+    </div>
+  );
+}
+
+function CityAutocomplete({
+  cities, value, onChange, disabled,
+}: {
+  cities: { name: string; stateCode: string }[];
+  value: string;
+  onChange: (v: string) => void;
+  disabled: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState(value);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { setQuery(value); }, [value]);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const filtered = useMemo(() => {
+    if (!query.trim()) return cities.slice(0, 80);
+    const q = query.toLowerCase();
+    return cities.filter(c => c.name.toLowerCase().startsWith(q)).slice(0, 80);
+  }, [query, cities]);
+
+  function handleSelect(name: string) {
+    onChange(name);
+    setQuery(name);
+    setOpen(false);
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      <div className={`bg-white rounded-2xl border border-black/10 px-5 py-4 transition-all ${disabled ? 'opacity-40' : ''}`}>
+        <p className="text-xs text-black/40 font-medium mb-1">City</p>
+        <input
+          value={query}
+          onChange={e => { setQuery(e.target.value); onChange(e.target.value); setOpen(true); }}
+          onFocus={() => { if (!disabled) setOpen(true); }}
+          placeholder={disabled ? 'Select a country first' : 'Start typing your city…'}
+          disabled={disabled}
+          autoComplete="off"
+          className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder-black/20 disabled:cursor-not-allowed leading-snug"
+        />
+      </div>
+      {open && !disabled && filtered.length > 0 && (
+        <div className="absolute z-50 left-0 right-0 mt-1 bg-white rounded-2xl border border-black/10 shadow-lg max-h-52 overflow-y-auto">
+          {filtered.map(c => (
+            <button
+              key={`${c.name}-${c.stateCode}`}
+              type="button"
+              onMouseDown={() => handleSelect(c.name)}
+              className="w-full text-left px-5 py-3 text-[15px] text-foreground hover:bg-black/5 transition-colors first:rounded-t-2xl last:rounded-b-2xl"
+            >
+              {c.name}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -353,23 +421,12 @@ export default function SignupPage() {
                 ))}
               </select>
             </div>
-            <div className={`bg-white rounded-2xl border border-black/10 px-5 py-4 transition-all ${!form.countryCode ? 'opacity-40' : ''}`}>
-              <p className="text-xs text-black/40 font-medium mb-1">City</p>
-              <input
-                list="city-options"
-                value={form.city}
-                onChange={e => update('city', e.target.value)}
-                placeholder={form.countryCode ? 'Start typing…' : 'Select a country first'}
-                disabled={!form.countryCode}
-                autoComplete="off"
-                className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder-black/20 disabled:cursor-not-allowed leading-snug"
-              />
-              {cities.length > 0 && (
-                <datalist id="city-options">
-                  {cities.slice(0, 500).map(c => <option key={`${c.name}-${c.stateCode}`} value={c.name} />)}
-                </datalist>
-              )}
-            </div>
+            <CityAutocomplete
+              cities={cities}
+              value={form.city}
+              onChange={v => update('city', v)}
+              disabled={!form.countryCode}
+            />
           </div>
         )}
 
