@@ -44,17 +44,16 @@ export default function SplashPage() {
       {/* Gradient overlay — transparent top, dark bottom */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-black/10 to-black/75" />
 
-      {/* Centered logo badge */}
+      {/* Centered logo */}
       <div className="relative flex-1 flex items-center justify-center px-10">
-        <div className="bg-white rounded-3xl px-6 py-5 shadow-2xl w-full max-w-[300px]">
-          <Image
-            src="/logo-pink.jpeg"
-            alt="myotherpair"
-            width={280}
-            height={153}
-            className="object-contain w-full"
-          />
-        </div>
+        <Image
+          src="/logo-pink.jpeg"
+          alt="myotherpair"
+          width={300}
+          height={164}
+          className="object-contain w-full max-w-[300px]"
+          style={{ mixBlendMode: 'multiply' }}
+        />
       </div>
 
       {/* Bottom text + actions */}
