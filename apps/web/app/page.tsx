@@ -44,15 +44,18 @@ export default function SplashPage() {
       {/* Gradient overlay — transparent top, dark bottom */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/5 via-black/10 to-black/75" />
 
-      {/* Wordmark top */}
-      <div className="relative pt-14 text-center">
-        <p className="text-[11px] font-semibold tracking-[0.25em] uppercase text-white/60">
-          myotherpair
-        </p>
+      {/* Centered logo badge */}
+      <div className="relative flex-1 flex items-center justify-center px-10">
+        <div className="bg-white rounded-3xl px-6 py-5 shadow-2xl w-full max-w-[300px]">
+          <Image
+            src="/logo.jpeg"
+            alt="myotherpair"
+            width={280}
+            height={153}
+            className="object-contain w-full"
+          />
+        </div>
       </div>
-
-      {/* Spacer */}
-      <div className="flex-1" />
 
       {/* Bottom text + actions */}
       <div className="relative px-6 pb-14">
