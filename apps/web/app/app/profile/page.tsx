@@ -54,14 +54,21 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!userId) return;
     (async () => {
-      const [profileRes, listingsRes, matchesRes, savedCountRes] = await Promise.all([
+      const [profileRes, listingsRes, matchesRes, savedCountRes, authUser] = await Promise.all([
         supabase.from('users').select('*').eq('id', userId).single(),
         supabase.from('listings').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('status', 'active'),
         supabase.from('matches').select('id', { count: 'exact', head: true }).or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`),
         supabase.from('saved_listings').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+        supabase.auth.getUser(),
       ]);
 
-      if (profileRes.data) setProfile(profileRes.data as ProfileData);
+      const dbProfile = (profileRes.data ?? {}) as ProfileData;
+      // Fall back to auth metadata if the users row has no name yet
+      const metaName = (authUser.data?.user?.user_metadata?.full_name as string | undefined)
+        ?? (authUser.data?.user?.user_metadata?.name as string | undefined);
+      if (!dbProfile.name && metaName) dbProfile.name = metaName;
+      if (!dbProfile.email) dbProfile.email = authUser.data?.user?.email ?? '';
+      setProfile(dbProfile);
 
       setStats({
         listings: listingsRes.count ?? 0,
@@ -131,7 +138,7 @@ export default function ProfilePage() {
             Profile
           </h1>
           <div className="flex items-center gap-2">
-            <Link href="/app/profile/edit" className="w-9 h-9 flex items-center justify-center rounded-full bg-black/[0.06]">
+            <Link href="/app/settings" className="w-9 h-9 flex items-center justify-center rounded-full bg-black/[0.06]">
               <Settings className="w-[17px] h-[17px] text-black/50" />
             </Link>
           </div>
@@ -349,8 +356,8 @@ export default function ProfilePage() {
               <div>
                 <p className="text-[11px] font-bold text-black/30 tracking-[0.15em] uppercase mb-2 px-1">Account</p>
                 <div className="bg-white rounded-2xl border border-black/[0.07] overflow-hidden">
-                  <Link href="/app/profile/edit" className="flex items-center gap-4 px-5 py-4 border-b border-black/[0.05]">
-                    <span className="flex-1 text-[14px] font-medium text-foreground">Edit Profile</span>
+                  <Link href="/app/settings" className="flex items-center gap-4 px-5 py-4 border-b border-black/[0.05]">
+                    <span className="flex-1 text-[14px] font-medium text-foreground">Account Settings</span>
                     <ChevronRight className="w-4 h-4 text-black/20" />
                   </Link>
                   <div className="flex items-center gap-4 px-5 py-4">
