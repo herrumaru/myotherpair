@@ -1,0 +1,14 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "sb-srykmrouuegthtcwsndu-auth-token",
+          "value": "{\"access_token\":\"eyJhbGciOiJFUzI1NiIsImtpZCI6ImNlZmM0Yzg2LTUyYTQtNGE2Mi04Njg5LWQxZmE5NjA5NTk2MyIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3NyeWttcm91dWVndGh0Y3dzbmR1LnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiJiYTcyODRlZS1hMjcwLTRjYjMtYWY4NC0wNGFmYjRjYmFiZjAiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzczOTUzMDk2LCJpYXQiOjE3NzM5NDk0OTYsImVtYWlsIjoiZTJlLXRlc3RAbXlvdGhlcnBhaXIuZGV2IiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6eyJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiZnVsbF9uYW1lIjoiRTJFIFRlc3RlciJ9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzczOTQ5NDk2fV0sInNlc3Npb25faWQiOiI3MWJmNjY4Ny0xYmU2LTQ2NDItOWJmMC1hNjgxMTlhNzNmMmEiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.gp839Ihc2jo_uiYrpSoZvHI95wFh8En2eoG5TYA_JXqhEhT2IWaJ8yQr22u8NOnMk5Jwn4Frg1hVU7Tb_VemUQ\",\"token_type\":\"bearer\",\"expires_in\":3600,\"expires_at\":1773953096,\"refresh_token\":\"hxsie7ujbdrg\",\"user\":{\"id\":\"ba7284ee-a270-4cb3-af84-04afb4cbabf0\",\"aud\":\"authenticated\",\"role\":\"authenticated\",\"email\":\"e2e-test@myotherpair.dev\",\"email_confirmed_at\":\"2026-03-19T19:15:19.196268Z\",\"phone\":\"\",\"confirmed_at\":\"2026-03-19T19:15:19.196268Z\",\"last_sign_in_at\":\"2026-03-19T19:44:56.736187484Z\",\"app_metadata\":{\"provider\":\"email\",\"providers\":[\"email\"]},\"user_metadata\":{\"email_verified\":true,\"full_name\":\"E2E Tester\"},\"identities\":[{\"identity_id\":\"f13cb98d-248c-45bb-97a3-285e760f1ca8\",\"id\":\"ba7284ee-a270-4cb3-af84-04afb4cbabf0\",\"user_id\":\"ba7284ee-a270-4cb3-af84-04afb4cbabf0\",\"identity_data\":{\"email\":\"e2e-test@myotherpair.dev\",\"email_verified\":false,\"phone_verified\":false,\"sub\":\"ba7284ee-a270-4cb3-af84-04afb4cbabf0\"},\"provider\":\"email\",\"last_sign_in_at\":\"2026-03-19T19:15:19.173832Z\",\"created_at\":\"2026-03-19T19:15:19.173887Z\",\"updated_at\":\"2026-03-19T19:15:19.173887Z\",\"email\":\"e2e-test@myotherpair.dev\"}],\"created_at\":\"2026-03-19T19:15:19.141029Z\",\"updated_at\":\"2026-03-19T19:44:56.769751Z\",\"is_anonymous\":false},\"weak_password\":null}"
+        }
+      ]
+    }
+  ]
+}

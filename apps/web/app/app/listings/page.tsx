@@ -83,7 +83,7 @@ export default function ListingsPage() {
             <button onClick={() => router.back()} className="w-8 h-8 flex items-center justify-center -ml-1">
               <ArrowLeft className="h-5 w-5 text-black/50" />
             </button>
-            <h1 className="font-display text-[28px] font-bold text-foreground leading-none tracking-[-0.02em]">
+            <h1 className="text-[28px] font-bold text-foreground leading-none tracking-[-0.02em]">
               My Listings
             </h1>
           </div>

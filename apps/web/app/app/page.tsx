@@ -244,7 +244,7 @@ export default function DiscoverPage() {
       <div className="min-h-screen bg-background pb-24">
         <header className="sticky top-0 z-40 bg-background">
           <div className="flex items-center px-5 pt-5 pb-3 max-w-lg mx-auto">
-            <h1 className="font-display text-[28px] font-bold text-foreground leading-none tracking-[-0.02em]">Discover</h1>
+            <h1 className="text-[28px] font-bold text-foreground leading-none tracking-[-0.02em]">Discover</h1>
           </div>
         </header>
         <div className="max-w-lg mx-auto px-5 pt-5">
@@ -270,7 +270,7 @@ export default function DiscoverPage() {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background">
         <div className="flex items-center justify-between px-5 pt-5 pb-3 max-w-lg mx-auto">
-          <h1 className="font-display text-[28px] font-bold text-foreground leading-none tracking-[-0.02em]">
+          <h1 className="text-[28px] font-bold text-foreground leading-none tracking-[-0.02em]">
             Discover
           </h1>
           <span className="text-[12px] text-black/30 font-medium">

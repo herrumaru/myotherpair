@@ -16,28 +16,22 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-foreground pb-[env(safe-area-inset-bottom)]">
-      <div className="flex items-stretch h-[58px] max-w-lg mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#1a1a1a] pb-[env(safe-area-inset-bottom)]">
+      <div className="flex items-center h-[60px] max-w-lg mx-auto">
         {NAV_ITEMS.map(({ to, Icon, label }) => {
           const active = pathname === to || (to !== '/app' && pathname.startsWith(to));
           return (
             <Link
               key={to}
               href={to}
-              className="flex flex-col items-center justify-center gap-[3px] flex-1"
+              aria-label={label}
+              className="flex items-center justify-center flex-1 h-full"
             >
               <Icon
-                className={`transition-all duration-150 ${
-                  active ? 'text-white' : 'text-white/35'
-                }`}
-                size={22}
-                strokeWidth={active ? 2.25 : 1.6}
+                size={24}
+                strokeWidth={active ? 2.2 : 1.6}
+                className={`transition-all duration-150 ${active ? 'text-white' : 'text-white/35'}`}
               />
-              <span className={`text-[9px] tracking-wide transition-colors duration-150 ${
-                active ? 'text-white font-semibold' : 'text-white/35 font-medium'
-              }`}>
-                {label}
-              </span>
             </Link>
           );
         })}

@@ -134,7 +134,7 @@ export default function ProfilePage() {
       {/* ── Header ── */}
       <header className="sticky top-0 z-40 bg-background">
         <div className="flex items-end justify-between px-5 pt-5 pb-3 max-w-lg mx-auto">
-          <h1 className="font-display text-[28px] font-bold text-foreground leading-none tracking-[-0.02em]">
+          <h1 className="text-[28px] font-bold text-foreground leading-none tracking-[-0.02em]">
             Profile
           </h1>
           <div className="flex items-center gap-2">
@@ -181,7 +181,7 @@ export default function ProfilePage() {
             </Link>
           </div>
 
-          <h2 className="font-display text-[22px] font-bold text-foreground tracking-[-0.02em] leading-tight">
+          <h2 className="text-[22px] font-bold text-foreground tracking-[-0.02em] leading-tight">
             {name || 'Set your name'}
           </h2>
           {profile.location && (

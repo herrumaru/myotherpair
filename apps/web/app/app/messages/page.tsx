@@ -100,7 +100,7 @@ export default function MessagesPage() {
     <div className="min-h-screen bg-background pb-20">
       <header className="sticky top-0 z-40 bg-background">
         <div className="px-5 pt-5 pb-3 max-w-lg mx-auto">
-          <h1 className="font-display text-[28px] font-bold text-foreground leading-none tracking-[-0.02em]">Messages</h1>
+          <h1 className="text-[28px] font-bold text-foreground leading-none tracking-[-0.02em]">Messages</h1>
         </div>
       </header>
 
