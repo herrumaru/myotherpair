@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { supabase } from '../lib/supabase';
 
 export default function SplashPage() {
@@ -31,18 +32,29 @@ export default function SplashPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
 
-      {/* Centered wordmark + headline */}
-      <div className="flex-1 flex flex-col items-center justify-center text-center px-8">
-        <p className="text-[11px] font-semibold tracking-[0.25em] uppercase text-foreground/30 mb-10">
+      {/* Hero image */}
+      <div className="relative w-full overflow-hidden" style={{ height: '52vh' }}>
+        <Image
+          src="https://images.unsplash.com/photo-1700178310305-0e05d7930f9f?auto=format&fit=crop&w=800&q=80"
+          alt="A pair of white and black sneakers on a warm beige background"
+          fill
+          className="object-cover object-center"
+          priority
+        />
+      </div>
+
+      {/* Wordmark + headline */}
+      <div className="flex-1 flex flex-col items-center justify-center text-center px-8 pt-6">
+        <p className="text-[11px] font-semibold tracking-[0.25em] uppercase text-foreground/30 mb-6">
           myotherpair
         </p>
 
-        <h1 className="font-display text-[3.2rem] sm:text-[4rem] font-bold text-foreground leading-[1.0] tracking-[-0.03em] mb-6">
+        <h1 className="font-display text-[3.2rem] sm:text-[4rem] font-bold text-foreground leading-[1.0] tracking-[-0.03em] mb-5">
           Every shoe<br />deserves<br /><span className="italic">a match.</span>
         </h1>
 
         <p className="text-foreground/40 text-[15px] leading-relaxed max-w-[260px]">
-          The marketplace for single shoes — for mismatched feet and single-foot needs.
+          The marketplace for single shoes, for mismatched feet and single-foot needs.
         </p>
       </div>
 
