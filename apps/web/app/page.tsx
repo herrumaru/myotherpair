@@ -44,8 +44,8 @@ export default function SplashPage() {
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/75" />
 
-      {/* Centered logo */}
-      <div className="relative flex-1 flex items-center justify-center px-10">
+      {/* Logo — pushed toward top */}
+      <div className="relative flex-1 flex items-start justify-center px-10 pt-16">
         <Image
           src="/logo-transparent.png"
           alt="myotherpair"
