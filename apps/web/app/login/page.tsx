@@ -58,23 +58,26 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
 
-      {/* Top bar */}
-      <div className="px-4 pt-12 pb-4 flex items-center">
-        <a href="/"
-          className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors"
+      {/* Back button */}
+      <div className="px-5 pt-14 pb-2 flex-shrink-0">
+        <a
+          href="/"
+          className="flex items-center justify-center -ml-1 p-1"
           aria-label="Back"
         >
-          <ChevronLeft className="w-5 h-5 text-foreground" />
+          <ChevronLeft className="w-7 h-7 text-foreground" />
         </a>
       </div>
 
       {/* Content */}
-      <div className="flex-1 px-6 pt-6 pb-4">
-        <p className="text-xs font-semibold tracking-[0.2em] uppercase text-black/30 mb-4 text-center">myotherpair</p>
-        <h1 className="font-display text-[2rem] font-bold text-foreground leading-tight tracking-[-0.02em] text-center mb-2">
+      <div className="flex-1 px-6 pt-6 pb-4 overflow-y-auto">
+        <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-black/30 mb-5 text-center">
+          myotherpair
+        </p>
+        <h1 className="font-display text-[2.6rem] font-bold text-foreground leading-[1.1] tracking-[-0.025em] text-center mb-3">
           Welcome back
         </h1>
-        <p className="text-center text-black/40 text-[14px] mb-10 leading-relaxed">
+        <p className="text-center text-black/40 text-[15px] mb-10 leading-relaxed">
           Sign in to your account.
         </p>
 
@@ -82,12 +85,12 @@ export default function LoginPage() {
 
           {/* Email */}
           <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
-            <p className="text-xs text-black/40 font-medium mb-1">Email</p>
+            <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Email address</p>
             <input
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="Enter your email"
+              placeholder="you@example.com"
               autoComplete="email"
               required
               className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder-black/20"
@@ -96,9 +99,9 @@ export default function LoginPage() {
 
           {/* Password */}
           <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
-            <div className="flex items-center justify-between mb-1">
-              <p className="text-xs text-black/40 font-medium">Password</p>
-              <button type="button" className="text-xs text-foreground font-medium">Forgot?</button>
+            <div className="flex items-center justify-between mb-1.5">
+              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider">Password</p>
+              <button type="button" className="text-[12px] text-foreground font-semibold">Forgot?</button>
             </div>
             <div className="flex items-center gap-2">
               <input
@@ -122,11 +125,11 @@ export default function LoginPage() {
             </div>
           )}
 
-          <div className="pt-1">
+          <div className="pt-2">
             <button
               type="submit"
               disabled={loading || !email || !password}
-              className="w-full h-14 rounded-full bg-foreground text-background text-[15px] font-semibold disabled:opacity-30 transition-opacity active:opacity-80 flex items-center justify-center gap-2"
+              className="w-full h-[54px] rounded-full bg-foreground text-background text-[15px] font-semibold disabled:opacity-30 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -142,9 +145,9 @@ export default function LoginPage() {
         </form>
 
         {/* Divider */}
-        <div className="flex items-center gap-4 my-6">
+        <div className="flex items-center gap-4 my-7">
           <div className="flex-1 h-px bg-black/10" />
-          <span className="text-xs text-black/30 font-medium">or</span>
+          <span className="text-[11px] text-black/30 font-semibold uppercase tracking-wider">or</span>
           <div className="flex-1 h-px bg-black/10" />
         </div>
 
@@ -152,7 +155,7 @@ export default function LoginPage() {
         <button
           type="button"
           onClick={handleGoogle}
-          className="w-full h-14 rounded-full bg-white border-2 border-black/10 flex items-center justify-center gap-3 text-[15px] font-medium text-foreground transition-colors hover:bg-black/[0.02] active:bg-black/5"
+          className="w-full h-[54px] rounded-full bg-white border-2 border-black/10 flex items-center justify-center gap-3 text-[15px] font-medium text-foreground transition-all active:scale-[0.98] hover:border-black/20"
         >
           <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>

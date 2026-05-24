@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef, useCallback, type FormEvent } from 'react';
+import { useState, useEffect, useMemo, useRef, type KeyboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import { ChevronLeft, ChevronRight, Eye, EyeOff, Check } from 'lucide-react';
@@ -65,17 +65,21 @@ const ALL_COUNTRIES = Country.getAllCountries().filter(c => SUPPORTED_COUNTRY_CO
 
 function CardInput({
   label, value, onChange, type = 'text', placeholder = '', disabled = false, autoComplete = '',
+  inputRef, onKeyDown,
 }: {
   label: string; value: string; onChange: (v: string) => void;
   type?: string; placeholder?: string; disabled?: boolean; autoComplete?: string;
+  inputRef?: React.Ref<HTMLInputElement>; onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void;
 }) {
   return (
     <div className={`bg-white rounded-2xl border border-black/10 px-5 py-4 transition-all ${disabled ? 'opacity-40' : ''}`}>
-      <p className="text-xs text-black/40 font-medium mb-1">{label}</p>
+      <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">{label}</p>
       <input
+        ref={inputRef}
         type={type}
         value={value}
         onChange={e => onChange(e.target.value)}
+        onKeyDown={onKeyDown}
         placeholder={placeholder}
         disabled={disabled}
         autoComplete={autoComplete}
@@ -94,15 +98,15 @@ function RadioCard({
     <button
       type="button"
       onClick={onClick}
-      className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border-2 bg-white transition-all text-left ${
-        selected ? 'border-foreground' : 'border-black/10'
+      className={`w-full flex items-center justify-between px-5 py-5 rounded-2xl border-2 bg-white transition-all text-left active:scale-[0.99] ${
+        selected ? 'border-foreground shadow-sm' : 'border-black/10'
       }`}
     >
       <div>
-        <p className="text-[17px] text-foreground">{label}</p>
-        {sublabel && <p className="text-xs text-black/40 mt-0.5">{sublabel}</p>}
+        <p className="text-[17px] font-medium text-foreground">{label}</p>
+        {sublabel && <p className="text-[13px] text-black/40 mt-0.5">{sublabel}</p>}
       </div>
-      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ml-4 transition-all ${
         selected ? 'border-foreground' : 'border-black/20'
       }`}>
         {selected && <div className="w-3 h-3 rounded-full bg-foreground" />}
@@ -119,7 +123,7 @@ function SizeCard({
   const sizes = getSizes(system);
   return (
     <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
-      <p className="text-xs text-black/40 font-medium mb-1">{label}</p>
+      <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">{label}</p>
       <select
         value={value}
         onChange={e => onChange(e.target.value)}
@@ -171,7 +175,7 @@ function CityAutocomplete({
   return (
     <div ref={containerRef} className="relative">
       <div className={`bg-white rounded-2xl border border-black/10 px-5 py-4 transition-all ${disabled ? 'opacity-40' : ''}`}>
-        <p className="text-xs text-black/40 font-medium mb-1">City</p>
+        <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">City</p>
         <input
           value={query}
           onChange={e => { setQuery(e.target.value); onChange(e.target.value); setOpen(true); }}
@@ -224,7 +228,6 @@ export default function SignupPage() {
 
   useEffect(() => {
     setForm(p => ({ ...p, sizeSystem: detectSizeSystem() }));
-    // Auto-detect country from browser locale
     const lang = navigator.language || '';
     const region = lang.split('-')[1];
     if (region && SUPPORTED_COUNTRY_CODES.has(region)) {
@@ -232,7 +235,6 @@ export default function SignupPage() {
     }
   }, []);
 
-  // Auto-focus first input whenever step changes
   useEffect(() => {
     setTimeout(() => firstInputRef.current?.focus(), 80);
   }, [step]);
@@ -250,13 +252,11 @@ export default function SignupPage() {
   const handleFootTypeSelect = (type: 'different' | 'amputee') => {
     setFootType(type);
     setForm(p => ({ ...p, isAmputee: type === 'amputee', amputeeSide: '', neededFootSize: '', leftFootSize: '', rightFootSize: '' }));
-    // Auto-advance after brief confirmation delay
     setTimeout(() => setStep(s => s + 1), 350);
   };
 
   const canProceed = useMemo(() => {
     switch (step) {
-      case 0: return true;
       case 1: return form.firstName.trim().length > 0;
       case 2: return /\S+@\S+\.\S+/.test(form.email);
       case 3: return strength.score >= 2;
@@ -334,19 +334,18 @@ export default function SignupPage() {
     setForm(p => ({ ...p, sizeSystem: sys, leftFootSize: '', rightFootSize: '', neededFootSize: '' }));
   };
 
-  // ── Render ────────────────────────────────────────────────────────────────
-
-  // Steps 1–6
   const stepConfig: Record<number, { title: string; subtitle: string }> = {
-    1: { title: "What's your name?",     subtitle: "This is how you'll appear on myotherpair." },
-    2: { title: "What's your email?",    subtitle: "Used for your account and verification. Never shared." },
-    3: { title: "Create a password",     subtitle: "At least 8 characters with a mix of letters and numbers." },
-    4: { title: "Where are you based?",  subtitle: "We'll show you listings near you." },
+    1: { title: "What's your name?",      subtitle: "This is how you'll appear on myotherpair." },
+    2: { title: "What's your email?",     subtitle: "Used for your account and verification." },
+    3: { title: "Create a password",      subtitle: "At least 8 characters with a mix of letters and numbers." },
+    4: { title: "Where are you based?",   subtitle: "We'll show you listings near you." },
     5: { title: "Tell us about your feet", subtitle: "This helps us find you the perfect match." },
-    6: { title: footType === 'amputee' ? "Which foot do you need?" : "What are your foot sizes?",
-         subtitle: footType === 'amputee'
-           ? "We'll find single shoes in your size."
-           : "We'll match you with someone who complements you." },
+    6: {
+      title: footType === 'amputee' ? "Which foot do you need?" : "What are your foot sizes?",
+      subtitle: footType === 'amputee'
+        ? "We'll find single shoes in your size."
+        : "We'll match you with someone who complements you.",
+    },
   };
 
   const { title, subtitle } = stepConfig[step] ?? { title: '', subtitle: '' };
@@ -354,36 +353,31 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
 
-      {/* Top bar */}
-      <div className="px-4 pt-12 pb-2 flex items-center gap-4">
-        <button
-          onClick={handleBack}
-          className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors flex-shrink-0"
-          aria-label="Back"
-        >
-          <ChevronLeft className="w-5 h-5 text-foreground" />
-        </button>
-        <div className="flex-1">
-          <div className="flex justify-between mb-1.5">
-            <span className="text-[11px] text-black/30 font-medium">{title}</span>
-            <span className="text-[11px] text-black/30">{step} / {TOTAL_STEPS}</span>
-          </div>
-          <div className="h-[2px] bg-black/10 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-foreground rounded-full transition-all duration-500"
-              style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
-            />
-          </div>
-        </div>
-        <div className="w-10" />
+      {/* Progress bar — very top, full bleed */}
+      <div className="h-[3px] bg-black/8 w-full flex-shrink-0">
+        <div
+          className="h-full bg-foreground transition-all duration-500 ease-out"
+          style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
+        />
       </div>
 
-      {/* Content */}
-      <div className="flex-1 px-6 pt-8 pb-4">
-        <h1 className="font-display text-[1.9rem] font-bold text-foreground leading-tight tracking-[-0.02em] text-center mb-3">
+      {/* Back button */}
+      <div className="px-5 pt-12 pb-2 flex-shrink-0">
+        <button
+          onClick={handleBack}
+          className="flex items-center justify-center -ml-1 p-1"
+          aria-label="Back"
+        >
+          <ChevronLeft className="w-7 h-7 text-foreground" />
+        </button>
+      </div>
+
+      {/* Scrollable content */}
+      <div className="flex-1 px-6 pt-4 pb-6 overflow-y-auto">
+        <h1 className="font-display text-[2.6rem] font-bold text-foreground leading-[1.1] tracking-[-0.025em] text-center mb-3">
           {title}
         </h1>
-        <p className="text-center text-black/40 text-[14px] mb-10 leading-relaxed max-w-xs mx-auto">
+        <p className="text-center text-black/40 text-[15px] mb-10 leading-relaxed max-w-[280px] mx-auto">
           {subtitle}
         </p>
 
@@ -391,7 +385,7 @@ export default function SignupPage() {
         {step === 1 && (
           <div className="space-y-3">
             <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
-              <p className="text-xs text-black/40 font-medium mb-1">First name</p>
+              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">First name</p>
               <input
                 ref={firstInputRef}
                 type="text"
@@ -403,7 +397,13 @@ export default function SignupPage() {
                 className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder-black/20 leading-snug"
               />
             </div>
-            <CardInput label="Last name (optional)" value={form.lastName} onChange={v => update('lastName', v)} placeholder="Your last name" autoComplete="family-name" />
+            <CardInput
+              label="Last name (optional)"
+              value={form.lastName}
+              onChange={v => update('lastName', v)}
+              placeholder="Your last name"
+              autoComplete="family-name"
+            />
           </div>
         )}
 
@@ -417,14 +417,14 @@ export default function SignupPage() {
                   ? 'border-green-400'
                   : 'border-black/10'
             }`}>
-              <p className="text-xs text-black/40 font-medium mb-1">Your email</p>
+              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Email address</p>
               <input
                 ref={firstInputRef}
                 type="email"
                 value={form.email}
                 onChange={e => update('email', e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && canProceed && handleNext()}
-                placeholder="Enter your email"
+                placeholder="you@example.com"
                 autoComplete="email"
                 className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder-black/20 leading-snug"
               />
@@ -439,7 +439,7 @@ export default function SignupPage() {
         {step === 3 && (
           <div className="space-y-3">
             <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
-              <p className="text-xs text-black/40 font-medium mb-1">Password</p>
+              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Password</p>
               <div className="flex items-center gap-2">
                 <input
                   ref={firstInputRef}
@@ -464,7 +464,7 @@ export default function SignupPage() {
         {step === 4 && (
           <div className="space-y-3">
             <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
-              <p className="text-xs text-black/40 font-medium mb-1">Country</p>
+              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Country</p>
               <select
                 value={form.countryCode}
                 onChange={e => { update('countryCode', e.target.value); update('city', ''); }}
@@ -506,7 +506,6 @@ export default function SignupPage() {
         {/* ── Step 6: Sizes ───────────────────────────────────────────────── */}
         {step === 6 && (
           <div className="space-y-4">
-            {/* Size system toggle */}
             <div className="flex gap-2">
               {(['UK', 'US', 'EU'] as SizeSystem[]).map(sys => (
                 <button
@@ -525,16 +524,8 @@ export default function SignupPage() {
             {footType === 'amputee' ? (
               <>
                 <div className="space-y-3">
-                  <RadioCard
-                    label="Left foot"
-                    selected={form.amputeeSide === 'left'}
-                    onClick={() => update('amputeeSide', 'left')}
-                  />
-                  <RadioCard
-                    label="Right foot"
-                    selected={form.amputeeSide === 'right'}
-                    onClick={() => update('amputeeSide', 'right')}
-                  />
+                  <RadioCard label="Left foot" selected={form.amputeeSide === 'left'} onClick={() => update('amputeeSide', 'left')} />
+                  <RadioCard label="Right foot" selected={form.amputeeSide === 'right'} onClick={() => update('amputeeSide', 'right')} />
                 </div>
                 {form.amputeeSide && (
                   <SizeCard
@@ -564,32 +555,33 @@ export default function SignupPage() {
         )}
 
         {error && (
-          <div className="mt-4 px-4 py-3 rounded-2xl bg-red-50 border border-red-100">
+          <div className="mt-6 px-4 py-3 rounded-2xl bg-red-50 border border-red-100">
             <p className="text-[13px] text-red-600">{error}</p>
           </div>
         )}
       </div>
 
-      {/* Bottom action */}
-      <div className="px-6 pb-12 pt-4">
-        <button
-          onClick={handleNext}
-          disabled={!canProceed || loading}
-          className="w-full h-14 rounded-full bg-foreground text-background text-[15px] font-semibold disabled:opacity-25 transition-opacity active:opacity-80 flex items-center justify-center gap-2"
-        >
-          {loading ? (
-            <>
-              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              Creating account…
-            </>
-          ) : step < TOTAL_STEPS ? (
-            <>Continue <ChevronRight className="w-4 h-4" /></>
-          ) : 'Create account'}
-        </button>
-
+      {/* Sticky continue button */}
+      <div className="flex-shrink-0 px-6 pb-12 pt-3 bg-background">
+        {step !== 5 && (
+          <button
+            onClick={handleNext}
+            disabled={!canProceed || loading}
+            className="w-full h-[54px] rounded-full bg-foreground text-background text-[15px] font-semibold disabled:opacity-25 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Creating account…
+              </>
+            ) : step < TOTAL_STEPS ? (
+              <>Continue <ChevronRight className="w-4 h-4" /></>
+            ) : 'Create account'}
+          </button>
+        )}
       </div>
 
     </div>

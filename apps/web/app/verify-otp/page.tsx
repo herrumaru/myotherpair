@@ -14,13 +14,13 @@ export default function VerifyOtpPage() {
     setEmail(params.get('email') ?? '');
   }, []);
 
-  const [digits,      setDigits]      = useState(['', '', '', '', '', '']);
-  const [loading,     setLoading]     = useState(false);
-  const [error,       setError]       = useState('');
-  const [resending,   setResending]   = useState(false);
-  const [resent,      setResent]      = useState(false);
-  const [editingEmail, setEditingEmail] = useState(false);
-  const [emailDraft,   setEmailDraft]   = useState('');
+  const [digits,        setDigits]        = useState(['', '', '', '', '', '']);
+  const [loading,       setLoading]       = useState(false);
+  const [error,         setError]         = useState('');
+  const [resending,     setResending]     = useState(false);
+  const [resent,        setResent]        = useState(false);
+  const [editingEmail,  setEditingEmail]  = useState(false);
+  const [emailDraft,    setEmailDraft]    = useState('');
   const emailInputRef = useRef<HTMLInputElement>(null);
 
   const refs = useRef<Array<HTMLInputElement | null>>([null, null, null, null, null, null]);
@@ -145,7 +145,6 @@ export default function VerifyOtpPage() {
 
   const filled = digits.join('').length === 6;
 
-  // Auto-submit when all 6 digits filled
   useEffect(() => {
     if (filled && !loading) handleVerify();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -154,29 +153,32 @@ export default function VerifyOtpPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
 
-      {/* Top bar */}
-      <div className="px-4 pt-12 pb-4 flex items-center">
+      {/* Back button */}
+      <div className="px-5 pt-14 pb-2 flex-shrink-0">
         <button
           onClick={() => router.push('/signup')}
-          className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors"
+          className="flex items-center justify-center -ml-1 p-1"
           aria-label="Back"
         >
-          <ChevronLeft className="w-5 h-5 text-foreground" />
+          <ChevronLeft className="w-7 h-7 text-foreground" />
         </button>
       </div>
 
       {/* Content */}
       <div className="flex-1 px-6 pt-6 pb-4">
-        <p className="text-xs font-semibold tracking-[0.2em] uppercase text-black/30 mb-4 text-center">myotherpair</p>
-        <h1 className="font-display text-[2rem] font-bold text-foreground leading-tight tracking-[-0.02em] text-center mb-2">
+        <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-black/30 mb-5 text-center">
+          myotherpair
+        </p>
+        <h1 className="font-display text-[2.6rem] font-bold text-foreground leading-[1.1] tracking-[-0.025em] text-center mb-3">
           Check your email
         </h1>
-        <p className="text-center text-black/40 text-[14px] mb-3 leading-relaxed">
+        <p className="text-center text-black/40 text-[15px] mb-3 leading-relaxed">
           We sent a 6-digit code to
         </p>
 
+        {/* Email display / edit */}
         {editingEmail ? (
-          <div className="bg-white rounded-2xl border-2 border-foreground px-4 py-3 mb-8 flex items-center gap-2">
+          <div className="bg-white rounded-2xl border-2 border-foreground px-4 py-3 mb-10 flex items-center gap-2">
             <input
               ref={emailInputRef}
               type="email"
@@ -194,20 +196,20 @@ export default function VerifyOtpPage() {
             </button>
           </div>
         ) : (
-          <div className="flex items-center justify-center gap-2 mb-8">
-            <p className="text-foreground text-[14px] font-semibold break-all">{email}</p>
+          <div className="flex items-center justify-center gap-2 mb-10">
+            <p className="text-foreground text-[15px] font-semibold break-all">{email}</p>
             <button
               onClick={startEditEmail}
               className="p-1.5 rounded-full hover:bg-black/5 transition-colors flex-shrink-0"
               aria-label="Edit email"
             >
-              <Pencil className="w-3.5 h-3.5 text-black/40" />
+              <Pencil className="w-3.5 h-3.5 text-black/35" />
             </button>
           </div>
         )}
 
         {/* OTP boxes */}
-        <div className="flex justify-center gap-2.5 mb-6">
+        <div className="flex justify-center gap-3 mb-8">
           {digits.map((d, i) => (
             <input
               key={i}
@@ -220,25 +222,34 @@ export default function VerifyOtpPage() {
               onKeyDown={e => handleKeyDown(e, i)}
               onPaste={i === 0 ? handlePaste : undefined}
               onFocus={e => e.target.select()}
-              className={`w-12 h-14 rounded-2xl border-2 text-center text-xl font-bold text-foreground bg-white outline-none transition-all duration-150 ${
+              className={`w-[52px] h-[64px] rounded-2xl border-2 text-center text-2xl font-bold text-foreground outline-none transition-all duration-150 ${
                 d
-                  ? 'border-foreground'
-                  : 'border-black/10 focus:border-foreground/40'
+                  ? 'bg-white border-foreground'
+                  : 'bg-black/[0.06] border-transparent focus:border-foreground/30 focus:bg-white'
               }`}
             />
           ))}
         </div>
 
         {error && (
-          <div className="px-4 py-3 rounded-2xl bg-red-50 border border-red-100 mb-4">
+          <div className="px-4 py-3 rounded-2xl bg-red-50 border border-red-100 mb-6">
             <p className="text-[13px] text-red-600 text-center">{error}</p>
           </div>
         )}
 
+        {resent && (
+          <div className="px-4 py-3 rounded-2xl bg-green-50 border border-green-100 mb-6">
+            <p className="text-[13px] text-green-700 text-center font-medium">Code sent! Check your inbox.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom actions */}
+      <div className="flex-shrink-0 px-6 pb-12 pt-3 bg-background space-y-3">
         <button
           onClick={handleVerify}
           disabled={loading || !filled}
-          className="w-full h-14 rounded-full bg-foreground text-background text-[15px] font-semibold disabled:opacity-30 transition-opacity active:opacity-80 flex items-center justify-center gap-2 mb-6"
+          className="w-full h-[54px] rounded-full bg-foreground text-background text-[15px] font-semibold disabled:opacity-25 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
         >
           {loading ? (
             <>
@@ -254,11 +265,9 @@ export default function VerifyOtpPage() {
         <button
           onClick={handleResend}
           disabled={resending || resent}
-          className={`w-full text-center text-[13px] transition-colors ${
-            resent ? 'text-green-600' : 'text-black/40 hover:text-foreground'
-          } disabled:cursor-not-allowed`}
+          className="w-full h-[54px] rounded-full border-2 border-black/15 bg-transparent text-foreground text-[15px] font-medium disabled:opacity-40 transition-all active:scale-[0.98] hover:border-black/30"
         >
-          {resent ? 'Code resent!' : resending ? 'Sending…' : "Didn't receive it? Resend code"}
+          {resending ? 'Sending…' : "Didn't get a code? Resend"}
         </button>
       </div>
 
