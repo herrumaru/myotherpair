@@ -311,16 +311,6 @@ export default function SignupPage() {
         {step === 2 && (
           <div className="space-y-3">
             <CardInput label="Your email" value={form.email} onChange={v => update('email', v)} type="email" placeholder="Enter your email" autoComplete="email" />
-            <button
-              type="button"
-              onClick={() => {}}
-              className="w-full flex items-start gap-3 bg-white rounded-2xl border border-black/10 px-5 py-4"
-            >
-              <div className="w-5 h-5 rounded border-2 border-black/20 mt-0.5 flex-shrink-0" />
-              <p className="text-[13px] text-black/40 text-left leading-relaxed">
-                Don't send me marketing communications about products and services
-              </p>
-            </button>
           </div>
         )}
 
