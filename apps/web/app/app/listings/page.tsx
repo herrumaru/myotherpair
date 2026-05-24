@@ -77,20 +77,16 @@ export default function ListingsPage() {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-border/30">
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-xl" />
-        <div className="relative flex items-center justify-between px-4 py-3.5 max-w-lg mx-auto">
-          <button
-            onClick={() => router.back()}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
+      <header className="sticky top-0 z-40 bg-background border-b border-black/[0.07]">
+        <div className="flex items-center justify-between px-5 h-14 max-w-lg mx-auto">
+          <button onClick={() => router.back()} className="w-8 h-8 flex items-center justify-center">
+            <ArrowLeft className="h-[18px] w-[18px] text-black/40" />
           </button>
-          <h1 className="text-[14px] font-semibold text-foreground tracking-[0.05em] uppercase">
+          <h1 className="text-[13px] font-bold tracking-[0.15em] uppercase text-foreground">
             My Listings
           </h1>
-          <Link href="/app/create" className="text-accent hover:text-accent/80 transition-colors">
-            <PlusCircle className="h-4 w-4" />
+          <Link href="/app/create" className="w-8 h-8 flex items-center justify-center">
+            <PlusCircle className="h-[18px] w-[18px] text-accent" />
           </Link>
         </div>
       </header>
@@ -99,13 +95,13 @@ export default function ListingsPage() {
 
         {/* CTA banner */}
         <Link href="/app/create">
-          <div className="gradient-warm rounded-2xl p-4 flex items-center gap-4 mb-5 shadow-card hover:shadow-card-hover transition-shadow">
-            <div className="w-10 h-10 rounded-xl bg-accent-foreground/10 flex items-center justify-center flex-shrink-0">
-              <PlusCircle className="h-5 w-5 text-accent-foreground" />
+          <div className="bg-foreground rounded-2xl p-4 flex items-center gap-4 mb-5">
+            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+              <PlusCircle className="h-5 w-5 text-white/80" />
             </div>
             <div>
-              <p className="font-semibold text-sm text-accent-foreground">List a new shoe</p>
-              <p className="text-[11px] text-accent-foreground/70">Find someone who needs your complement</p>
+              <p className="font-semibold text-[14px] text-white">List a new shoe</p>
+              <p className="text-[12px] text-white/50">Find someone who needs your complement</p>
             </div>
           </div>
         </Link>
