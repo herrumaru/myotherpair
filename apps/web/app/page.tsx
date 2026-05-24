@@ -34,7 +34,7 @@ export default function SplashPage() {
 
       {/* Background image */}
       <Image
-        src="https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?auto=format&fit=crop&w=800&q=80"
+        src="https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=800&q=80"
         alt="Pink New Balance sneaker"
         fill
         className="object-cover object-center"
