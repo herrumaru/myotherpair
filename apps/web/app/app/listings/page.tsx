@@ -77,16 +77,18 @@ export default function ListingsPage() {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-background border-b border-black/[0.07]">
-        <div className="flex items-center justify-between px-5 h-14 max-w-lg mx-auto">
-          <button onClick={() => router.back()} className="w-8 h-8 flex items-center justify-center">
-            <ArrowLeft className="h-[18px] w-[18px] text-black/40" />
-          </button>
-          <h1 className="text-[13px] font-bold tracking-[0.15em] uppercase text-foreground">
-            My Listings
-          </h1>
+      <header className="sticky top-0 z-40 bg-background">
+        <div className="flex items-end justify-between px-5 pt-5 pb-3 max-w-lg mx-auto">
+          <div className="flex items-center gap-3">
+            <button onClick={() => router.back()} className="w-8 h-8 flex items-center justify-center -ml-1">
+              <ArrowLeft className="h-5 w-5 text-black/50" />
+            </button>
+            <h1 className="font-display text-[28px] font-bold text-foreground leading-none tracking-[-0.02em]">
+              My Listings
+            </h1>
+          </div>
           <Link href="/app/create" className="w-8 h-8 flex items-center justify-center">
-            <PlusCircle className="h-[18px] w-[18px] text-accent" />
+            <PlusCircle className="h-[20px] w-[20px] text-accent" />
           </Link>
         </div>
       </header>

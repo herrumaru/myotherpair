@@ -391,9 +391,9 @@ export default function BrowsePage() {
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Sticky header + search */}
-      <header className="sticky top-0 z-40 bg-background border-b border-black/[0.07] px-4 pt-0 pb-3">
-        <div className="flex items-center justify-between max-w-lg mx-auto h-14">
-          <h1 className="font-display text-[17px] font-bold text-foreground tracking-[-0.01em]">Browse</h1>
+      <header className="sticky top-0 z-40 bg-background px-4 pb-3">
+        <div className="flex items-end justify-between max-w-lg mx-auto pt-5 pb-1">
+          <h1 className="font-display text-[28px] font-bold text-foreground leading-none tracking-[-0.02em]">Browse</h1>
           <button
             onClick={() => setShowFilters(v => !v)}
             className={`relative flex items-center gap-1.5 h-9 px-4 rounded-full text-[13px] font-semibold border-2 transition-all ${
