@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef, type FormEvent } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import { ChevronLeft, ChevronRight, Eye, EyeOff, Check } from 'lucide-react';
@@ -212,6 +212,7 @@ export default function SignupPage() {
   const [error,     setError]     = useState('');
   const [showPass,  setShowPass]  = useState(false);
   const [footType,  setFootType]  = useState<FootType>(null);
+  const firstInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState<FormState>({
     firstName: '', lastName: '', email: '', password: '',
@@ -223,7 +224,18 @@ export default function SignupPage() {
 
   useEffect(() => {
     setForm(p => ({ ...p, sizeSystem: detectSizeSystem() }));
+    // Auto-detect country from browser locale
+    const lang = navigator.language || '';
+    const region = lang.split('-')[1];
+    if (region && SUPPORTED_COUNTRY_CODES.has(region)) {
+      setForm(p => ({ ...p, countryCode: region }));
+    }
   }, []);
+
+  // Auto-focus first input whenever step changes
+  useEffect(() => {
+    setTimeout(() => firstInputRef.current?.focus(), 80);
+  }, [step]);
 
   const cities = useMemo(() => {
     if (!form.countryCode) return [];
@@ -238,6 +250,8 @@ export default function SignupPage() {
   const handleFootTypeSelect = (type: 'different' | 'amputee') => {
     setFootType(type);
     setForm(p => ({ ...p, isAmputee: type === 'amputee', amputeeSide: '', neededFootSize: '', leftFootSize: '', rightFootSize: '' }));
+    // Auto-advance after brief confirmation delay
+    setTimeout(() => setStep(s => s + 1), 350);
   };
 
   const canProceed = useMemo(() => {
@@ -341,19 +355,25 @@ export default function SignupPage() {
     <div className="min-h-screen bg-background flex flex-col">
 
       {/* Top bar */}
-      <div className="px-4 pt-12 pb-4 flex items-center gap-4">
+      <div className="px-4 pt-12 pb-2 flex items-center gap-4">
         <button
           onClick={handleBack}
-          className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors"
+          className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors flex-shrink-0"
           aria-label="Back"
         >
           <ChevronLeft className="w-5 h-5 text-foreground" />
         </button>
-        <div className="flex-1 h-[2px] bg-black/10 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-foreground rounded-full transition-all duration-500"
-            style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
-          />
+        <div className="flex-1">
+          <div className="flex justify-between mb-1.5">
+            <span className="text-[11px] text-black/30 font-medium">{title}</span>
+            <span className="text-[11px] text-black/30">{step} / {TOTAL_STEPS}</span>
+          </div>
+          <div className="h-[2px] bg-black/10 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-foreground rounded-full transition-all duration-500"
+              style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
+            />
+          </div>
         </div>
         <div className="w-10" />
       </div>
@@ -370,7 +390,19 @@ export default function SignupPage() {
         {/* ── Step 1: Name ────────────────────────────────────────────────── */}
         {step === 1 && (
           <div className="space-y-3">
-            <CardInput label="First name" value={form.firstName} onChange={v => update('firstName', v)} placeholder="Your first name" autoComplete="given-name" />
+            <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
+              <p className="text-xs text-black/40 font-medium mb-1">First name</p>
+              <input
+                ref={firstInputRef}
+                type="text"
+                value={form.firstName}
+                onChange={e => update('firstName', e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && canProceed && handleNext()}
+                placeholder="Your first name"
+                autoComplete="given-name"
+                className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder-black/20 leading-snug"
+              />
+            </div>
             <CardInput label="Last name (optional)" value={form.lastName} onChange={v => update('lastName', v)} placeholder="Your last name" autoComplete="family-name" />
           </div>
         )}
@@ -378,7 +410,28 @@ export default function SignupPage() {
         {/* ── Step 2: Email ───────────────────────────────────────────────── */}
         {step === 2 && (
           <div className="space-y-3">
-            <CardInput label="Your email" value={form.email} onChange={v => update('email', v)} type="email" placeholder="Enter your email" autoComplete="email" />
+            <div className={`bg-white rounded-2xl border-2 px-5 py-4 transition-all ${
+              form.email && !/\S+@\S+\.\S+/.test(form.email)
+                ? 'border-red-300'
+                : form.email && /\S+@\S+\.\S+/.test(form.email)
+                  ? 'border-green-400'
+                  : 'border-black/10'
+            }`}>
+              <p className="text-xs text-black/40 font-medium mb-1">Your email</p>
+              <input
+                ref={firstInputRef}
+                type="email"
+                value={form.email}
+                onChange={e => update('email', e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && canProceed && handleNext()}
+                placeholder="Enter your email"
+                autoComplete="email"
+                className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder-black/20 leading-snug"
+              />
+            </div>
+            {form.email && !/\S+@\S+\.\S+/.test(form.email) && (
+              <p className="text-[12px] text-red-500 px-1">Please enter a valid email address.</p>
+            )}
           </div>
         )}
 
@@ -389,9 +442,11 @@ export default function SignupPage() {
               <p className="text-xs text-black/40 font-medium mb-1">Password</p>
               <div className="flex items-center gap-2">
                 <input
+                  ref={firstInputRef}
                   type={showPass ? 'text' : 'password'}
                   value={form.password}
                   onChange={e => update('password', e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && canProceed && handleNext()}
                   placeholder="••••••••"
                   autoComplete="new-password"
                   className="flex-1 bg-transparent text-foreground text-[17px] outline-none placeholder-black/20"

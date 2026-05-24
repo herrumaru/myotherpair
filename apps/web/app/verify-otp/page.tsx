@@ -145,6 +145,12 @@ export default function VerifyOtpPage() {
 
   const filled = digits.join('').length === 6;
 
+  // Auto-submit when all 6 digits filled
+  useEffect(() => {
+    if (filled && !loading) handleVerify();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filled]);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
 
