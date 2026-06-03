@@ -262,7 +262,7 @@ export default function DiscoverPage() {
       {matchCelebration && (
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center text-center px-8 bg-black/85">
           <div className="text-6xl mb-5">🎉</div>
-          <h3 className="font-display text-4xl font-bold text-foreground mb-3">It's a match!</h3>
+          <h3 className="text-4xl font-bold text-foreground mb-3">It's a match!</h3>
           <p className="text-muted-foreground text-sm">Head to Messages to say hello 👋</p>
         </div>
       )}
@@ -372,11 +372,11 @@ export default function DiscoverPage() {
                       {/* Bottom info */}
                       <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
                         <div className="flex items-end justify-between mb-1.5">
-                          <h3 className="font-display text-xl font-bold text-white leading-tight">
+                          <h3 className="text-xl font-bold text-white leading-tight">
                             {currentListing.brand}{' '}
                             <span className="text-white/60 font-normal text-base">{currentListing.model}</span>
                           </h3>
-                          <span className="font-display text-lg font-bold text-white">
+                          <span className="text-lg font-bold text-white">
                             {currentListing.price != null ? `$${currentListing.price}` : '$—'}
                           </span>
                         </div>
@@ -443,7 +443,7 @@ export default function DiscoverPage() {
             transition={{ duration: 0.5 }}
           >
             <div className="w-px h-12 bg-border/40 mx-auto mb-8" />
-            <h3 className="font-display text-2xl font-bold text-foreground tracking-[-0.02em] mb-3">
+            <h3 className="text-2xl font-bold text-foreground tracking-[-0.02em] mb-3">
               All caught up
             </h3>
             <p className="text-[13px] text-muted-foreground/50 max-w-[260px] mx-auto leading-relaxed">

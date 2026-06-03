@@ -117,22 +117,16 @@ export default function EditProfilePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-border/30">
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-xl" />
-        <div className="relative flex items-center justify-between px-4 py-3.5 max-w-lg mx-auto">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
+      <header className="sticky top-0 z-40 bg-background border-b border-black/[0.07]">
+        <div className="flex items-center justify-between px-5 h-14 max-w-lg mx-auto">
+          <button onClick={() => router.back()} className="w-8 h-8 flex items-center justify-center -ml-1">
+            <ArrowLeft className="h-5 w-5 text-black/50" />
           </button>
-          <h1 className="text-[14px] font-semibold text-foreground tracking-[0.05em] uppercase">
-            Edit Profile
-          </h1>
+          <h1 className="text-[15px] font-semibold text-foreground">Edit Profile</h1>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="text-accent font-semibold text-sm hover:text-accent/80 transition-colors disabled:opacity-50"
+            className="text-[15px] font-semibold text-accent disabled:opacity-40"
           >
             Save
           </button>

@@ -197,14 +197,12 @@ export default function EditListingPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <header className="sticky top-0 z-40 border-b border-border/30">
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-xl" />
-        <div className="relative flex items-center justify-between px-4 py-3.5 max-w-lg mx-auto">
-          <button onClick={() => router.back()} className="text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="h-4 w-4" />
+      <header className="sticky top-0 z-40 bg-background border-b border-black/[0.07]">
+        <div className="flex items-end gap-3 px-5 pt-5 pb-3 max-w-lg mx-auto">
+          <button onClick={() => router.back()} className="w-8 h-8 flex items-center justify-center -ml-1 flex-shrink-0">
+            <ArrowLeft className="h-5 w-5 text-black/50" />
           </button>
-          <h1 className="text-[14px] font-semibold text-foreground tracking-[0.05em] uppercase">Edit Listing</h1>
-          <div className="w-6" />
+          <h1 className="text-[28px] font-bold text-foreground leading-none tracking-[-0.02em]">Edit Listing</h1>
         </div>
       </header>
 

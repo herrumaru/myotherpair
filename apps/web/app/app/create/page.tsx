@@ -209,11 +209,10 @@ export default function CreatePage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <header className="sticky top-0 z-40 glass-nav border-b border-border/50 px-4 py-3.5">
-        <h1 className="font-display text-lg font-bold text-foreground">List a shoe</h1>
-        <p className="text-[11px] text-muted-foreground mt-0.5">
-          Upload a photo, set your price, and find your match.
-        </p>
+      <header className="sticky top-0 z-40 bg-background border-b border-black/[0.07]">
+        <div className="flex items-end justify-between px-5 pt-5 pb-3 max-w-lg mx-auto">
+          <h1 className="text-[28px] font-bold text-foreground leading-none tracking-[-0.02em]">List a Shoe</h1>
+        </div>
       </header>
 
       <div className="max-w-lg mx-auto px-4 py-5">

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '../../../../lib/supabase';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
-import { ArrowLeft, MapPin, MessageCircle, Heart, Share2, ArrowLeftRight } from 'lucide-react';
+import { ArrowLeft, MapPin, MessageCircle, Heart, ArrowLeftRight } from 'lucide-react';
 import { formatSizeLabel } from '../../../../lib/sizeConversion';
 
 interface Listing {
@@ -149,9 +149,7 @@ export default function ListingDetailPage({ params }: PageProps) {
 
   const sideLabel   = listing.foot_side === 'L' ? 'Left' : listing.foot_side === 'R' ? 'Right' : 'Either';
   const sideVariant = listing.foot_side === 'L' ? 'left' as const : listing.foot_side === 'R' ? 'right' as const : 'default' as const;
-  const messageHref = matchId
-    ? `/app/messages/${matchId}`
-    : `/app/messages`;
+  const messageHref = matchId ? `/app/messages/${matchId}` : null;
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -173,18 +171,10 @@ export default function ListingDetailPage({ params }: PageProps) {
         <div className="absolute top-4 left-4 right-4 flex justify-between">
           <button
             onClick={() => router.back()}
-            className="h-10 w-10 rounded-full bg-card/80 backdrop-blur-md flex items-center justify-center shadow-card border border-border/30"
+            className="h-10 w-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4 text-white" />
           </button>
-          <div className="flex gap-2">
-            <button className="h-10 w-10 rounded-full bg-card/80 backdrop-blur-md flex items-center justify-center shadow-card border border-border/30">
-              <Share2 className="h-4 w-4" />
-            </button>
-            <button className="h-10 w-10 rounded-full bg-card/80 backdrop-blur-md flex items-center justify-center shadow-card border border-border/30">
-              <Heart className="h-4 w-4" />
-            </button>
-          </div>
         </div>
 
         {/* Floating badges */}
@@ -202,7 +192,7 @@ export default function ListingDetailPage({ params }: PageProps) {
         {/* Title & price */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="font-display text-2xl font-bold text-foreground leading-tight">
+            <h1 className="text-2xl font-bold text-foreground leading-tight">
               {listing.shoe_brand} {listing.shoe_model}
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
@@ -248,16 +238,18 @@ export default function ListingDetailPage({ params }: PageProps) {
         {/* Actions */}
         {listing.user_id !== userId && (
           <div className="flex gap-3">
-            <Link href={messageHref} className="flex-1">
-              <Button
-                variant="hero"
-                size="lg"
-                className="w-full gap-2 rounded-xl text-base shadow-elevated hover:shadow-glow transition-shadow"
-                style={{ height: 52 }}
-              >
-                <MessageCircle className="h-5 w-5" /> Message seller
-              </Button>
-            </Link>
+            {messageHref ? (
+              <Link href={messageHref} className="flex-1">
+                <Button variant="hero" size="lg" className="w-full gap-2 rounded-xl text-base" style={{ height: 52 }}>
+                  <MessageCircle className="h-5 w-5" /> Message seller
+                </Button>
+              </Link>
+            ) : (
+              <div className="flex-1 p-4 rounded-2xl bg-muted/40 border border-border/30 text-center">
+                <p className="text-sm font-medium text-foreground mb-0.5">Want to connect?</p>
+                <p className="text-xs text-muted-foreground">Swipe right on this listing in <Link href="/app" className="text-accent font-semibold">Discover</Link> to request a match.</p>
+              </div>
+            )}
           </div>
         )}
 
