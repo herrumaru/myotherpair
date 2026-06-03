@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '../../../../lib/supabase';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
-import { ArrowLeft, MapPin, MessageCircle, Heart, ArrowLeftRight } from 'lucide-react';
+import { ArrowLeft, MapPin, MessageCircle, ArrowLeftRight, ShoppingCart, Loader2 } from 'lucide-react';
 import { formatSizeLabel } from '../../../../lib/sizeConversion';
 
 interface Listing {
@@ -20,6 +20,7 @@ interface Listing {
   description: string | null;
   photos: string[];
   user_id: string;
+  status: string;
 }
 
 interface Seller {
@@ -29,29 +30,26 @@ interface Seller {
   avatar_url: string | null;
 }
 
-interface MatchInfo {
-  matchId: string;
-}
-
 const CONDITION_LABELS: Record<string, string> = {
   new_with_tags: 'New (tags on)', new_without_tags: 'New', excellent: 'Excellent',
   good: 'Good', fair: 'Fair', poor: 'Poor',
 };
 
-interface PageProps {
-  params: { id: string };
-}
+interface PageProps { params: { id: string } }
 
 export default function ListingDetailPage({ params }: PageProps) {
   const router    = useRouter();
   const listingId = params.id;
 
-  const [userId,   setUserId]   = useState<string | null>(null);
-  const [listing,  setListing]  = useState<Listing | null>(null);
-  const [seller,   setSeller]   = useState<Seller | null>(null);
-  const [matchId,  setMatchId]  = useState<string | null>(null);
-  const [loading,  setLoading]  = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const [userId,        setUserId]        = useState<string | null>(null);
+  const [listing,       setListing]       = useState<Listing | null>(null);
+  const [seller,        setSeller]        = useState<Seller | null>(null);
+  const [matchId,       setMatchId]       = useState<string | null>(null);
+  const [loading,       setLoading]       = useState(true);
+  const [notFound,      setNotFound]      = useState(false);
+  const [contacting,    setContacting]    = useState(false);
+  const [buyingNow,     setBuyingNow]     = useState(false);
+  const [contactError,  setContactError]  = useState('');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -64,65 +62,121 @@ export default function ListingDetailPage({ params }: PageProps) {
     (async () => {
       const { data, error } = await supabase
         .from('listings')
-        .select('id, shoe_brand, shoe_model, size, foot_side, condition, price, description, photos, user_id')
+        .select('id, shoe_brand, shoe_model, size, foot_side, condition, price, description, photos, user_id, status')
         .eq('id', listingId)
         .single();
 
-      if (error || !data) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
+      if (error || !data) { setNotFound(true); setLoading(false); return; }
 
       const d = data as Record<string, unknown>;
-      const l: Listing = {
-        id:         d.id         as string,
-        shoe_brand: d.shoe_brand as string,
-        shoe_model: d.shoe_model as string,
-        size:       d.size       as number,
-        foot_side:  d.foot_side  as string,
-        condition:  d.condition  as string,
-        price:      d.price      as number | null,
-        description:d.description as string | null,
-        photos:     Array.isArray(d.photos) ? (d.photos as string[]) : [],
-        user_id:    d.user_id    as string,
-      };
-      setListing(l);
+      setListing({
+        id:          d.id          as string,
+        shoe_brand:  d.shoe_brand  as string,
+        shoe_model:  d.shoe_model  as string,
+        size:        d.size        as number,
+        foot_side:   d.foot_side   as string,
+        condition:   d.condition   as string,
+        price:       d.price       as number | null,
+        description: d.description as string | null,
+        photos:      Array.isArray(d.photos) ? (d.photos as string[]) : [],
+        user_id:     d.user_id     as string,
+        status:      d.status      as string,
+      });
 
-      // Load seller
       const { data: sellerData } = await supabase
-        .from('users')
-        .select('id, name, location, avatar_url')
-        .eq('id', l.user_id)
-        .single();
+        .from('users').select('id, name, location, avatar_url')
+        .eq('id', d.user_id as string).single();
+
       if (sellerData) {
         const s = sellerData as Record<string, unknown>;
-        setSeller({
-          id:         s.id         as string,
-          name:       s.name       as string,
-          location:   s.location   as string,
-          avatar_url: s.avatar_url as string | null,
-        });
+        setSeller({ id: s.id as string, name: s.name as string, location: s.location as string, avatar_url: s.avatar_url as string | null });
       }
-
       setLoading(false);
     })();
   }, [listingId]);
 
-  // Look for an existing match to use as message thread
+  // Find existing match/conversation between current user and seller
   useEffect(() => {
     if (!userId || !listing) return;
-    supabase
-      .from('matches')
-      .select('id')
-      .or(`listing_id_1.eq.${listingId},listing_id_2.eq.${listingId}`)
-      .or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`)
-      .limit(1)
-      .single()
-      .then(({ data }) => {
-        if (data) setMatchId((data as { id: string }).id);
+    (async () => {
+      // Look for any match between these two users (regardless of listing)
+      const { data } = await supabase
+        .from('matches')
+        .select('id')
+        .or(
+          `and(user_id_1.eq.${userId},user_id_2.eq.${listing.user_id}),and(user_id_1.eq.${listing.user_id},user_id_2.eq.${userId})`
+        )
+        .limit(1)
+        .maybeSingle();
+      if (data) setMatchId((data as { id: string }).id);
+    })();
+  }, [userId, listing]);
+
+  // Create a direct conversation with the seller
+  const handleContact = async () => {
+    if (!userId || !listing || !seller) return;
+    if (matchId) { router.push(`/app/messages/${matchId}`); return; }
+
+    setContacting(true);
+    setContactError('');
+
+    try {
+      const { data, error } = await supabase
+        .from('matches')
+        .insert({
+          listing_id_1: null,
+          listing_id_2: listingId,
+          user_id_1:    userId,
+          user_id_2:    seller.id,
+          status:       'pending',
+        })
+        .select('id')
+        .single();
+
+      if (error) throw error;
+      const newMatchId = (data as { id: string }).id;
+      setMatchId(newMatchId);
+
+      // Fire-and-forget email notification to seller
+      fetch('/api/notifications/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type:       'new_contact',
+          toUserId:   seller.id,
+          listingId,
+        }),
+      }).catch(() => {});
+
+      router.push(`/app/messages/${newMatchId}`);
+    } catch {
+      setContactError('Could not start conversation. Please try again.');
+      setContacting(false);
+    }
+  };
+
+  // Stripe checkout
+  const handleBuyNow = async () => {
+    if (!userId || !listing) return;
+    setBuyingNow(true);
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ listingId, buyerId: userId }),
       });
-  }, [userId, listing, listingId]);
+      const json = await res.json() as { url?: string; error?: string };
+      if (json.url) {
+        window.location.href = json.url;
+      } else {
+        alert(json.error ?? 'Payment unavailable right now.');
+        setBuyingNow(false);
+      }
+    } catch {
+      alert('Payment unavailable right now.');
+      setBuyingNow(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -139,17 +193,19 @@ export default function ListingDetailPage({ params }: PageProps) {
   if (notFound || !listing) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">Listing not found</p>
+        <div className="text-center px-5">
+          <p className="text-lg font-semibold text-foreground mb-2">Listing not found</p>
+          <p className="text-sm text-muted-foreground mb-6">It may have been removed or sold.</p>
           <Button variant="outline" onClick={() => router.back()}>Go back</Button>
         </div>
       </div>
     );
   }
 
+  const isOwner     = listing.user_id === userId;
+  const isSold      = listing.status === 'sold';
   const sideLabel   = listing.foot_side === 'L' ? 'Left' : listing.foot_side === 'R' ? 'Right' : 'Either';
   const sideVariant = listing.foot_side === 'L' ? 'left' as const : listing.foot_side === 'R' ? 'right' as const : 'default' as const;
-  const messageHref = matchId ? `/app/messages/${matchId}` : null;
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -157,38 +213,34 @@ export default function ListingDetailPage({ params }: PageProps) {
       <div className="relative">
         <div className="aspect-[4/3] bg-muted overflow-hidden">
           {listing.photos[0] ? (
-            <img
-              src={listing.photos[0]}
-              alt={`${listing.shoe_brand} ${listing.shoe_model}`}
-              className="w-full h-full object-cover"
-            />
+            <img src={listing.photos[0]} alt={`${listing.shoe_brand} ${listing.shoe_model}`} className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-8xl opacity-30">👟</div>
+            <div className="w-full h-full flex items-center justify-center text-8xl opacity-20">👟</div>
           )}
         </div>
-
-        {/* Nav buttons */}
-        <div className="absolute top-4 left-4 right-4 flex justify-between">
-          <button
-            onClick={() => router.back()}
-            className="h-10 w-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center"
-          >
-            <ArrowLeft className="h-4 w-4 text-white" />
-          </button>
-        </div>
-
-        {/* Floating badges */}
+        {/* Back button */}
+        <button
+          onClick={() => router.back()}
+          className="absolute top-4 left-4 h-10 w-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center"
+        >
+          <ArrowLeft className="h-4 w-4 text-white" />
+        </button>
+        {/* Sold overlay */}
+        {isSold && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <span className="text-white font-bold text-2xl tracking-widest uppercase">Sold</span>
+          </div>
+        )}
+        {/* Badges */}
         <div className="absolute bottom-3 left-4 flex gap-2">
-          <Badge variant={sideVariant} className="shadow-sm backdrop-blur-sm text-xs px-3 py-1">
-            {sideLabel} shoe
-          </Badge>
+          <Badge variant={sideVariant} className="shadow-sm backdrop-blur-sm text-xs px-3 py-1">{sideLabel} shoe</Badge>
           <Badge variant="default" className="shadow-sm backdrop-blur-sm text-xs px-3 py-1">
             {CONDITION_LABELS[listing.condition] ?? listing.condition}
           </Badge>
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 py-5 space-y-5 animate-fade-in">
+      <div className="max-w-lg mx-auto px-4 py-5 space-y-4">
         {/* Title & price */}
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -199,31 +251,28 @@ export default function ListingDetailPage({ params }: PageProps) {
               {formatSizeLabel(String(listing.size), 'UK')} · {sideLabel} foot
             </p>
           </div>
-          <p className="text-3xl font-bold text-foreground whitespace-nowrap">
+          <p className="text-3xl font-bold text-foreground whitespace-nowrap flex-shrink-0">
             {listing.price != null ? `$${listing.price}` : '$—'}
           </p>
         </div>
 
         {/* Description */}
         {listing.description && (
-          <div className="p-4 rounded-2xl bg-muted/30 border border-border/30">
+          <div className="p-4 rounded-2xl bg-muted/40 border border-border/30">
             <p className="text-sm text-foreground leading-relaxed">{listing.description}</p>
           </div>
         )}
 
-        {/* Seller */}
+        {/* Seller card */}
         {seller && (
-          <div className="flex items-center gap-3 p-4 rounded-2xl bg-card shadow-card border border-border/30 hover-lift">
-            <div className="relative">
-              {seller.avatar_url ? (
-                <img src={seller.avatar_url} alt={seller.name} className="w-12 h-12 rounded-xl object-cover" />
-              ) : (
-                <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center text-base font-bold text-accent">
-                  {seller.name[0]}
-                </div>
-              )}
-              <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-match-green border-2 border-card" />
-            </div>
+          <div className="flex items-center gap-3 p-4 rounded-2xl bg-card border border-border/30">
+            {seller.avatar_url ? (
+              <img src={seller.avatar_url} alt={seller.name} className="w-12 h-12 rounded-xl object-cover flex-shrink-0" />
+            ) : (
+              <div className="w-12 h-12 rounded-xl bg-accent/15 flex items-center justify-center text-base font-bold text-accent flex-shrink-0">
+                {seller.name[0]}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm text-foreground">{seller.name}</p>
               {seller.location && (
@@ -235,35 +284,79 @@ export default function ListingDetailPage({ params }: PageProps) {
           </div>
         )}
 
-        {/* Actions */}
-        {listing.user_id !== userId && (
-          <div className="flex gap-3">
-            {messageHref ? (
-              <Link href={messageHref} className="flex-1">
-                <Button variant="hero" size="lg" className="w-full gap-2 rounded-xl text-base" style={{ height: 52 }}>
-                  <MessageCircle className="h-5 w-5" /> Message seller
-                </Button>
-              </Link>
-            ) : (
-              <div className="flex-1 p-4 rounded-2xl bg-muted/40 border border-border/30 text-center">
-                <p className="text-sm font-medium text-foreground mb-0.5">Want to connect?</p>
-                <p className="text-xs text-muted-foreground">Swipe right on this listing in <Link href="/app" className="text-accent font-semibold">Discover</Link> to request a match.</p>
-              </div>
+        {/* Actions — buyers only, non-sold listings */}
+        {!isOwner && !isSold && (
+          <div className="space-y-2.5">
+            {contactError && (
+              <p className="text-xs text-destructive bg-destructive/10 rounded-xl px-4 py-2.5">{contactError}</p>
+            )}
+
+            {/* Message */}
+            <Button
+              variant="hero"
+              size="lg"
+              className="w-full gap-2 rounded-xl text-base"
+              style={{ height: 52 }}
+              onClick={handleContact}
+              disabled={contacting}
+            >
+              {contacting
+                ? <><Loader2 className="h-4 w-4 animate-spin" /> Opening chat…</>
+                : <><MessageCircle className="h-5 w-5" /> {matchId ? 'Continue chat' : 'Message seller'}</>
+              }
+            </Button>
+
+            {/* Buy Now — only when Stripe is configured */}
+            {listing.price != null && (
+              <button
+                onClick={handleBuyNow}
+                disabled={buyingNow}
+                className="w-full h-[52px] rounded-xl border-2 border-foreground bg-transparent text-foreground text-[15px] font-semibold flex items-center justify-center gap-2 disabled:opacity-40 transition-all active:scale-[0.98]"
+              >
+                {buyingNow
+                  ? <><Loader2 className="h-4 w-4 animate-spin" /> Redirecting…</>
+                  : <><ShoppingCart className="h-5 w-5" /> Buy now · ${listing.price}</>
+                }
+              </button>
             )}
           </div>
         )}
 
-        {/* Compatible matches note */}
-        <div className="pt-2">
-          <div className="flex items-center gap-2 p-4 rounded-2xl bg-match-green/5 border border-match-green/15">
-            <div className="w-7 h-7 rounded-lg bg-match-green/10 flex items-center justify-center">
+        {/* Owner actions */}
+        {isOwner && (
+          <div className="flex gap-2.5">
+            <Link href={`/app/listing/${listingId}/edit`} className="flex-1">
+              <Button variant="outline" className="w-full rounded-xl" style={{ height: 48 }}>
+                Edit listing
+              </Button>
+            </Link>
+            <Link href="/app/listings" className="flex-1">
+              <Button variant="outline" className="w-full rounded-xl" style={{ height: 48 }}>
+                My listings
+              </Button>
+            </Link>
+          </div>
+        )}
+
+        {/* Sold state */}
+        {!isOwner && isSold && (
+          <div className="p-4 rounded-2xl bg-muted/40 border border-border/30 text-center">
+            <p className="font-semibold text-foreground">This shoe has been sold</p>
+            <Link href="/app/browse" className="text-sm text-accent font-semibold mt-1 inline-block">Browse other listings →</Link>
+          </div>
+        )}
+
+        {/* How matching works */}
+        {!isOwner && !isSold && (
+          <div className="flex items-start gap-3 p-4 rounded-2xl bg-muted/30 border border-border/20">
+            <div className="w-7 h-7 rounded-lg bg-match-green/10 flex items-center justify-center flex-shrink-0 mt-0.5">
               <ArrowLeftRight className="h-3.5 w-3.5 text-match-green" />
             </div>
-            <p className="text-sm text-foreground/70">
-              Swipe right on the discover tab to request a match with this listing.
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Message the seller directly, or swipe right in <Link href="/app" className="text-accent font-semibold">Discover</Link> to show mutual interest.
             </p>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
