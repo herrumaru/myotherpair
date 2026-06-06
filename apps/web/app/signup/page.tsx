@@ -24,12 +24,12 @@ function PasswordStrengthBar({ password }: { password: string }) {
     <div className="mt-3 space-y-2">
       <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map(i => (
-          <div key={i} className={`flex-1 h-1 rounded-full transition-all duration-300 ${i <= result.score ? result.barColor : 'bg-black/10'}`} />
+          <div key={i} className={`flex-1 h-1 rounded-full transition-all duration-300 ${i <= result.score ? result.barColor : 'bg-muted-foreground/20'}`} />
         ))}
       </div>
       <div className="flex flex-wrap gap-x-3 gap-y-0.5">
         {result.checks.map(c => (
-          <span key={c.label} className={`text-[11px] flex items-center gap-1 ${c.pass ? 'text-green-600' : 'text-black/30'}`}>
+          <span key={c.label} className={`text-[11px] flex items-center gap-1 ${c.pass ? 'text-green-600' : 'text-muted-foreground/50'}`}>
             {c.pass ? <Check className="h-2.5 w-2.5" /> : <span className="w-2.5 inline-block" />}
             {c.label}
           </span>
@@ -101,13 +101,13 @@ function RadioCard({
     <button
       type="button"
       onClick={onClick}
-      className={`w-full flex items-center justify-between px-5 py-5 rounded-2xl border-2 bg-white transition-all text-left active:scale-[0.99] ${
+      className={`w-full flex items-center justify-between px-5 py-5 rounded-2xl border-2 bg-card transition-all text-left active:scale-[0.99] ${
         selected ? 'border-foreground shadow-sm' : 'border-border'
       }`}
     >
       <div>
         <p className="text-[17px] font-medium text-foreground">{label}</p>
-        {sublabel && <p className="text-[13px] text-black/40 mt-0.5">{sublabel}</p>}
+        {sublabel && <p className="text-[13px] text-muted-foreground mt-0.5">{sublabel}</p>}
       </div>
       <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ml-4 transition-all ${
         selected ? 'border-foreground' : 'border-border'
@@ -196,7 +196,7 @@ function CityAutocomplete({
               key={`${c.name}-${c.stateCode}`}
               type="button"
               onMouseDown={() => handleSelect(c.name)}
-              className="w-full text-left px-5 py-3 text-[15px] text-foreground hover:bg-black/5 transition-colors first:rounded-t-2xl last:rounded-b-2xl"
+              className="w-full text-left px-5 py-3 text-[15px] text-foreground hover:bg-muted/50 transition-colors first:rounded-t-2xl last:rounded-b-2xl"
             >
               {c.name}
             </button>
@@ -255,7 +255,8 @@ export default function SignupPage() {
       setUsernameStatus('invalid'); return;
     }
     setUsernameStatus('checking');
-    const { data } = await supabase.from('users').select('id').ilike('username', clean).limit(1);
+    const { data, error } = await supabase.from('users').select('id').ilike('username', clean).limit(1);
+    if (error) { setUsernameStatus('idle'); return; }
     setUsernameStatus(data && data.length > 0 ? 'taken' : 'available');
   }, []);
 
@@ -397,7 +398,7 @@ export default function SignupPage() {
         <h1 className="font-display text-[2.6rem] font-bold text-foreground leading-[1.1] tracking-[-0.025em] text-center mb-3">
           {title}
         </h1>
-        <p className="text-center text-black/40 text-[15px] mb-10 leading-relaxed max-w-[280px] mx-auto">
+        <p className="text-center text-muted-foreground text-[15px] mb-10 leading-relaxed max-w-[280px] mx-auto">
           {subtitle}
         </p>
 
@@ -430,7 +431,7 @@ export default function SignupPage() {
         {/* ── Step 2: Username ────────────────────────────────────────────── */}
         {step === 2 && (
           <div className="space-y-3">
-            <div className={`bg-white rounded-2xl border-2 px-5 py-4 transition-all ${
+            <div className={`bg-card rounded-2xl border-2 px-5 py-4 transition-all ${
               usernameStatus === 'taken'   ? 'border-red-300'   :
               usernameStatus === 'invalid' ? 'border-amber-300' :
               usernameStatus === 'available' ? 'border-green-400' :
@@ -438,7 +439,7 @@ export default function SignupPage() {
             }`}>
               <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-1.5">Username</p>
               <div className="flex items-center gap-1">
-                <span className="text-[17px] text-black/25 font-medium select-none">@</span>
+                <span className="text-[17px] text-muted-foreground/50 font-medium select-none">@</span>
                 <input
                   ref={firstInputRef}
                   type="text"
@@ -455,7 +456,7 @@ export default function SignupPage() {
                   className="flex-1 bg-transparent text-foreground text-[17px] outline-none placeholder:text-muted-foreground/40 leading-snug"
                 />
                 {usernameStatus === 'checking' && (
-                  <svg className="w-4 h-4 animate-spin text-black/30 flex-shrink-0" fill="none" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 animate-spin text-muted-foreground/50 flex-shrink-0" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
@@ -478,7 +479,7 @@ export default function SignupPage() {
         {/* ── Step 3: Email ───────────────────────────────────────────────── */}
         {step === 3 && (
           <div className="space-y-3">
-            <div className={`bg-white rounded-2xl border-2 px-5 py-4 transition-all ${
+            <div className={`bg-card rounded-2xl border-2 px-5 py-4 transition-all ${
               form.email && !/\S+@\S+\.\S+/.test(form.email)
                 ? 'border-red-300'
                 : form.email && /\S+@\S+\.\S+/.test(form.email)
@@ -519,7 +520,7 @@ export default function SignupPage() {
                   autoComplete="new-password"
                   className="flex-1 bg-transparent text-foreground text-[17px] outline-none placeholder:text-muted-foreground/40"
                 />
-                <button type="button" onClick={() => setShowPass(v => !v)} className="text-black/30 hover:text-black/50 transition-colors">
+                <button type="button" onClick={() => setShowPass(v => !v)} className="text-muted-foreground/50 hover:text-muted-foreground transition-colors">
                   {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
@@ -609,11 +610,11 @@ export default function SignupPage() {
                 <SizeCard system={form.sizeSystem} value={form.leftFootSize} onChange={v => update('leftFootSize', v)} label="Left foot size" />
                 <SizeCard system={form.sizeSystem} value={form.rightFootSize} onChange={v => update('rightFootSize', v)} label="Right foot size" />
                 {form.leftFootSize && form.rightFootSize && form.leftFootSize !== form.rightFootSize && (
-                  <div className="px-5 py-4 rounded-2xl bg-white border border-green-200 flex items-start gap-3">
+                  <div className="px-5 py-4 rounded-2xl bg-card border border-green-500/30 flex items-start gap-3">
                     <span className="text-green-500 text-lg leading-none">✓</span>
                     <div>
-                      <p className="text-[13px] font-semibold text-green-700">Great — myotherpair is built for you!</p>
-                      <p className="text-[12px] text-black/40 mt-0.5">We'll find someone who's your complement.</p>
+                      <p className="text-[13px] font-semibold text-green-600 dark:text-green-400">Great — myotherpair is built for you!</p>
+                      <p className="text-[12px] text-muted-foreground mt-0.5">We'll find someone who's your complement.</p>
                     </div>
                   </div>
                 )}
@@ -623,7 +624,7 @@ export default function SignupPage() {
         )}
 
         {error && (
-          <div className="mt-6 px-4 py-3 rounded-2xl bg-red-50 border border-red-100">
+          <div className="mt-6 px-4 py-3 rounded-2xl bg-red-500/10 border border-red-500/20">
             <p className="text-[13px] text-red-600">{error}</p>
           </div>
         )}

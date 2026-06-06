@@ -91,28 +91,28 @@ export default function SearchPage() {
     <div className="min-h-screen bg-background pb-24">
 
       {/* ── Search bar ──────────────────────────────────────────── */}
-      <div className="sticky top-0 z-40 bg-background px-4 pt-12 pb-3 border-b border-black/[0.06]">
+      <div className="sticky top-0 z-40 bg-background px-4 pt-12 pb-3 border-b border-border">
         <div className="relative flex items-center gap-2">
           <div className="flex-1 relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-black/30 pointer-events-none" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 pointer-events-none" />
             <input
               ref={inputRef}
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Search shoes or members…"
-              className="w-full pl-10 pr-10 h-11 bg-black/[0.05] rounded-2xl text-[15px] text-foreground placeholder:text-black/30 outline-none border border-transparent focus:border-black/10 transition-colors"
+              className="w-full pl-10 pr-10 h-11 bg-muted/50 rounded-2xl text-[15px] text-foreground placeholder:text-muted-foreground outline-none border border-transparent focus:border-border transition-colors"
             />
             {query && (
               <button
                 onClick={() => setQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-black/25 hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 <X className="h-4 w-4" />
               </button>
             )}
           </div>
-          <button className="w-11 h-11 rounded-2xl bg-black/[0.05] flex items-center justify-center flex-shrink-0">
-            <Camera className="h-4.5 w-4.5 text-black/40" />
+          <button className="w-11 h-11 rounded-2xl bg-muted/50 flex items-center justify-center flex-shrink-0">
+            <Camera className="h-4.5 w-4.5 text-muted-foreground" />
           </button>
         </div>
       </div>
@@ -120,7 +120,7 @@ export default function SearchPage() {
       {/* ── No query → categories ───────────────────────────────── */}
       {!query && (
         <div className="px-4 pt-5">
-          <p className="text-[11px] font-semibold text-black/35 uppercase tracking-wider mb-3">Browse by category</p>
+          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">Browse by category</p>
           <div className="grid grid-cols-2 gap-2.5">
             {CATEGORIES.map(cat => (
               <Link
@@ -144,7 +144,7 @@ export default function SearchPage() {
             <div className="flex justify-center pt-10">
               <div className="flex gap-1.5">
                 {[0, 1, 2].map(i => (
-                  <div key={i} className="w-2 h-2 rounded-full bg-black/20 animate-bounce" style={{ animationDelay: `${i * 0.12}s` }} />
+                  <div key={i} className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: `${i * 0.12}s` }} />
                 ))}
               </div>
             </div>
@@ -153,20 +153,20 @@ export default function SearchPage() {
           {!loading && !hasResults && (
             <div className="text-center pt-16">
               <p className="text-[17px] font-semibold text-foreground mb-1">No results</p>
-              <p className="text-[14px] text-black/40">Try a different search term</p>
+              <p className="text-[14px] text-muted-foreground">Try a different search term</p>
             </div>
           )}
 
           {/* Members */}
           {users.length > 0 && (
             <div>
-              <p className="text-[11px] font-semibold text-black/35 uppercase tracking-wider mb-3">Members</p>
-              <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">Members</p>
+              <div className="bg-card rounded-2xl border border-border overflow-hidden">
                 {users.map((u, i) => (
                   <Link
                     key={u.id}
                     href={`/app/profile/${u.id}`}
-                    className={`flex items-center gap-3 px-4 py-3 active:bg-black/[0.03] transition-colors ${i < users.length - 1 ? 'border-b border-black/5' : ''}`}
+                    className={`flex items-center gap-3 px-4 py-3 active:bg-muted/30 transition-colors ${i < users.length - 1 ? 'border-b border-border' : ''}`}
                   >
                     {u.avatar_url ? (
                       <img src={u.avatar_url} alt={u.name} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
@@ -178,13 +178,13 @@ export default function SearchPage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-[14px] font-semibold text-foreground leading-tight">{u.name}</p>
                       {u.username && (
-                        <p className="text-[12px] text-black/40">@{u.username}</p>
+                        <p className="text-[12px] text-muted-foreground">@{u.username}</p>
                       )}
                       {u.location && (
-                        <p className="text-[11px] text-black/30 mt-0.5">{u.location}</p>
+                        <p className="text-[11px] text-muted-foreground/60 mt-0.5">{u.location}</p>
                       )}
                     </div>
-                    <ChevronRight className="h-4 w-4 text-black/20 flex-shrink-0" />
+                    <ChevronRight className="h-4 w-4 text-muted-foreground/50 flex-shrink-0" />
                   </Link>
                 ))}
               </div>
@@ -194,13 +194,13 @@ export default function SearchPage() {
           {/* Listings */}
           {listings.length > 0 && (
             <div>
-              <p className="text-[11px] font-semibold text-black/35 uppercase tracking-wider mb-3">Listings</p>
+              <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">Listings</p>
               <div className="grid grid-cols-2 gap-3">
                 {listings.map(l => {
                   const sym       = getCurrencySymbol(l.currency || 'USD');
                   const sideLabel = l.foot_side === 'L' ? 'Left' : l.foot_side === 'R' ? 'Right' : '';
                   return (
-                    <Link key={l.id} href={`/app/listing/${l.id}`} className="block rounded-2xl overflow-hidden bg-white border border-black/8 active:scale-[0.98] transition-transform">
+                    <Link key={l.id} href={`/app/listing/${l.id}`} className="block rounded-2xl overflow-hidden bg-card border border-border active:scale-[0.98] transition-transform">
                       <div className="aspect-square bg-muted overflow-hidden relative">
                         {l.photos[0] ? (
                           <img src={l.photos[0]} alt="" className="w-full h-full object-cover" />
@@ -227,7 +227,7 @@ export default function SearchPage() {
               {listings.length === 12 && (
                 <button
                   onClick={() => router.push(`/app/browse?q=${encodeURIComponent(query)}`)}
-                  className="w-full mt-3 h-11 rounded-2xl border-2 border-black/10 text-[13px] font-semibold text-foreground flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all"
+                  className="w-full mt-3 h-11 rounded-2xl border-2 border-border text-[13px] font-semibold text-foreground flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all"
                 >
                   See all results <ChevronRight className="h-4 w-4" />
                 </button>

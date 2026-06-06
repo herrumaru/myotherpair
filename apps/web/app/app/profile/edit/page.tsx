@@ -127,10 +127,10 @@ export default function EditProfilePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-background border-b border-black/[0.07]">
+      <header className="sticky top-0 z-40 bg-background border-b border-border">
         <div className="flex items-center justify-between px-5 h-14 max-w-lg mx-auto">
           <button onClick={() => router.back()} className="w-8 h-8 flex items-center justify-center -ml-1">
-            <ArrowLeft className="h-5 w-5 text-black/50" />
+            <ArrowLeft className="h-5 w-5 text-muted-foreground" />
           </button>
           <h1 className="text-[15px] font-semibold text-foreground">Edit Profile</h1>
           <button
@@ -270,7 +270,7 @@ export default function EditProfilePage() {
             className="flex items-center gap-3 text-sm text-foreground/70 text-left w-full"
           >
             <div className={`w-10 h-6 rounded-full flex-shrink-0 flex items-center px-0.5 transition-colors ${form.isAmputee ? 'bg-accent' : 'bg-muted'}`}>
-              <div className={`w-5 h-5 rounded-full bg-white shadow transition-transform ${form.isAmputee ? 'translate-x-4' : 'translate-x-0'}`} />
+              <div className={`w-5 h-5 rounded-full bg-background shadow transition-transform ${form.isAmputee ? 'translate-x-4' : 'translate-x-0'}`} />
             </div>
             I am an amputee / missing limb
           </button>

@@ -168,7 +168,7 @@ export default function ProfilePage() {
           </h1>
           <div className="flex items-center gap-2">
             <Link href="/app/settings" className="w-9 h-9 flex items-center justify-center rounded-full bg-muted/60">
-              <Settings className="w-[17px] h-[17px] text-black/50" />
+              <Settings className="w-[17px] h-[17px] text-muted-foreground" />
             </Link>
           </div>
         </div>

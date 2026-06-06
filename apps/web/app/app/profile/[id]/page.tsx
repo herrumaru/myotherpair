@@ -110,15 +110,15 @@ export default function PublicProfilePage() {
         </div>
         <div className="max-w-lg mx-auto px-5 space-y-4 pt-4">
           <div className="flex gap-4">
-            <div className="w-16 h-16 rounded-full bg-black/5 animate-pulse flex-shrink-0" />
+            <div className="w-16 h-16 rounded-full bg-muted animate-pulse flex-shrink-0" />
             <div className="flex-1 space-y-2 pt-2">
-              <div className="h-4 w-1/2 rounded bg-black/5 animate-pulse" />
-              <div className="h-3 w-1/3 rounded bg-black/5 animate-pulse" />
+              <div className="h-4 w-1/2 rounded bg-muted animate-pulse" />
+              <div className="h-3 w-1/3 rounded bg-muted animate-pulse" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             {[0,1,2,3].map(i => (
-              <div key={i} className="aspect-square rounded-2xl bg-black/5 animate-pulse" />
+              <div key={i} className="aspect-square rounded-2xl bg-muted animate-pulse" />
             ))}
           </div>
         </div>
@@ -143,7 +143,7 @@ export default function PublicProfilePage() {
     <div className="min-h-screen bg-background pb-24">
 
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-background border-b border-black/[0.06]">
+      <header className="sticky top-0 z-40 bg-background border-b border-border">
         <div className="flex items-center justify-between px-4 h-14 max-w-lg mx-auto">
           <button onClick={() => router.back()} className="w-8 h-8 flex items-center justify-center -ml-1">
             <ArrowLeft className="h-5 w-5 text-foreground" />
@@ -171,21 +171,21 @@ export default function PublicProfilePage() {
           <div className="flex-1 min-w-0">
             <h1 className="text-[20px] font-bold text-foreground leading-tight">{profile.name}</h1>
             {profile.username && (
-              <p className="text-[13px] text-black/35 font-medium">@{profile.username}</p>
+              <p className="text-[13px] text-muted-foreground font-medium">@{profile.username}</p>
             )}
             {profile.location && (
-              <div className="flex items-center gap-1 text-black/40 mt-1">
+              <div className="flex items-center gap-1 text-muted-foreground mt-1">
                 <MapPin className="w-3 h-3 flex-shrink-0" />
                 <span className="text-[12px] truncate">{profile.location}</span>
               </div>
             )}
-            <p className="text-[11px] text-black/25 mt-1">Member since {memberSince}</p>
+            <p className="text-[11px] text-muted-foreground/50 mt-1">Member since {memberSince}</p>
           </div>
         </div>
 
         {/* Bio */}
         {profile.bio && (
-          <div className="bg-white rounded-2xl border border-black/[0.07] px-4 py-3.5 mb-4">
+          <div className="bg-card rounded-2xl border border-border px-4 py-3.5 mb-4">
             <p className="text-[14px] text-foreground leading-relaxed">{profile.bio}</p>
           </div>
         )}
@@ -204,7 +204,7 @@ export default function PublicProfilePage() {
         {isOwnProfile && (
           <Link
             href="/app/profile/edit"
-            className="w-full h-12 rounded-2xl border-2 border-black/10 text-foreground text-[14px] font-semibold flex items-center justify-center mb-5 active:scale-[0.98] transition-all"
+            className="w-full h-12 rounded-2xl border-2 border-border text-foreground text-[14px] font-semibold flex items-center justify-center mb-5 active:scale-[0.98] transition-all"
           >
             Edit profile
           </Link>
@@ -213,7 +213,7 @@ export default function PublicProfilePage() {
         {/* Listings */}
         {listings.length > 0 ? (
           <>
-            <p className="text-[11px] font-bold text-black/30 tracking-[0.15em] uppercase mb-3">
+            <p className="text-[11px] font-bold text-muted-foreground tracking-[0.15em] uppercase mb-3">
               {listings.length} listing{listings.length !== 1 ? 's' : ''}
             </p>
             <div className="grid grid-cols-2 gap-3">
@@ -224,9 +224,9 @@ export default function PublicProfilePage() {
                   <Link
                     key={l.id}
                     href={`/app/listing/${l.id}`}
-                    className="block rounded-2xl overflow-hidden bg-white border border-black/8 active:scale-[0.98] transition-transform"
+                    className="block rounded-2xl overflow-hidden bg-card border border-border active:scale-[0.98] transition-transform"
                   >
-                    <div className="aspect-square bg-black/5 overflow-hidden relative">
+                    <div className="aspect-square bg-muted/40 overflow-hidden relative">
                       {l.photos[0] ? (
                         <img src={l.photos[0]} alt="" className="w-full h-full object-cover" />
                       ) : (
@@ -251,7 +251,7 @@ export default function PublicProfilePage() {
           </>
         ) : (
           <div className="text-center py-16">
-            <p className="text-[14px] text-black/30">No active listings yet</p>
+            <p className="text-[14px] text-muted-foreground">No active listings yet</p>
           </div>
         )}
       </div>

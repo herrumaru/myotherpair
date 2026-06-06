@@ -39,7 +39,7 @@ export default function OrderSuccessPage() {
       <div className="max-w-sm w-full space-y-6">
         {/* Icon */}
         <div className="flex justify-center">
-          <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center">
+          <div className="w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center">
             <CheckCircle className="h-10 w-10 text-green-500" strokeWidth={1.5} />
           </div>
         </div>

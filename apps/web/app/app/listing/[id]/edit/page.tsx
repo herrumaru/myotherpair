@@ -44,16 +44,16 @@ function RadioCard({ label, sub, selected, onClick }: {
     <button
       type="button"
       onClick={onClick}
-      className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border-2 bg-white transition-all text-left active:scale-[0.99] ${
-        selected ? 'border-foreground shadow-sm' : 'border-black/10'
+      className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border-2 bg-card transition-all text-left active:scale-[0.99] ${
+        selected ? 'border-foreground shadow-sm' : 'border-border'
       }`}
     >
       <div>
         <p className="text-[16px] font-medium text-foreground">{label}</p>
-        {sub && <p className="text-[13px] text-black/40 mt-0.5">{sub}</p>}
+        {sub && <p className="text-[13px] text-muted-foreground mt-0.5">{sub}</p>}
       </div>
       <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ml-4 transition-all ${
-        selected ? 'border-foreground bg-foreground' : 'border-black/20'
+        selected ? 'border-foreground bg-foreground' : 'border-border'
       }`}>
         {selected && <Check className="w-3 h-3 text-background" />}
       </div>
@@ -247,7 +247,7 @@ export default function EditListingPage() {
 
         {/* ── Photos ─────────────────────────────────────────────── */}
         <div>
-          <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-3 pl-1">Photos</p>
+          <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-3 pl-1">Photos</p>
           <div className="grid grid-cols-2 gap-2">
 
             {/* Cover (first) — large */}
@@ -264,12 +264,12 @@ export default function EditListingPage() {
               </div>
             ) : (
               <button type="button" onClick={() => fileRef.current?.click()}
-                className="col-span-2 aspect-square rounded-2xl bg-white border-2 border-dashed border-black/15 flex flex-col items-center justify-center gap-2 active:scale-[0.98] transition-all">
-                <div className="w-14 h-14 rounded-2xl bg-black/5 flex items-center justify-center">
-                  <Camera className="h-6 w-6 text-black/30" />
+                className="col-span-2 aspect-square rounded-2xl bg-card border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 active:scale-[0.98] transition-all">
+                <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center">
+                  <Camera className="h-6 w-6 text-muted-foreground/70" />
                 </div>
                 <p className="text-[14px] font-semibold text-foreground">Add cover photo</p>
-                <p className="text-[12px] text-black/35">Tap to upload</p>
+                <p className="text-[12px] text-muted-foreground">Tap to upload</p>
               </button>
             )}
 
@@ -287,16 +287,16 @@ export default function EditListingPage() {
             {/* Add more slot */}
             {photos.length > 0 && photos.length < MAX_PHOTOS && (
               <button type="button" onClick={() => fileRef.current?.click()}
-                className="aspect-square rounded-2xl bg-white border-2 border-dashed border-black/12 flex flex-col items-center justify-center gap-1 active:scale-[0.98] transition-all">
-                <Plus className="w-5 h-5 text-black/25" />
-                <p className="text-[11px] text-black/30 font-medium">Add more</p>
+                className="aspect-square rounded-2xl bg-card border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 active:scale-[0.98] transition-all">
+                <Plus className="w-5 h-5 text-muted-foreground/50" />
+                <p className="text-[11px] text-muted-foreground/50 font-medium">Add more</p>
               </button>
             )}
           </div>
 
           <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={handlePhotoChange} />
 
-          <p className="text-center text-[12px] text-black/30 mt-2">
+          <p className="text-center text-[12px] text-muted-foreground/50 mt-2">
             {photos.length === 0
               ? 'At least 1 photo required · up to 6'
               : `${photos.length} of ${MAX_PHOTOS} photos`}
@@ -305,10 +305,10 @@ export default function EditListingPage() {
 
         {/* ── Brand & Model ──────────────────────────────────────── */}
         <div className="space-y-3">
-          <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider pl-1">Shoe details</p>
+          <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider pl-1">Shoe details</p>
 
-          <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
-            <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Brand</p>
+          <div className="bg-card rounded-2xl border border-border px-5 py-4">
+            <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-1.5">Brand</p>
             <select
               value={form.brand}
               onChange={e => update('brand', e.target.value)}
@@ -319,21 +319,21 @@ export default function EditListingPage() {
             </select>
           </div>
 
-          <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
-            <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Model</p>
+          <div className="bg-card rounded-2xl border border-border px-5 py-4">
+            <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-1.5">Model</p>
             <input
               type="text"
               value={form.model}
               onChange={e => update('model', e.target.value)}
               placeholder="e.g. Air Force 1, Chuck Taylor…"
-              className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder-black/20 leading-snug"
+              className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder:text-muted-foreground/40 leading-snug"
             />
           </div>
         </div>
 
         {/* ── Size & Foot ────────────────────────────────────────── */}
         <div className="space-y-3">
-          <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider pl-1">Size & foot</p>
+          <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider pl-1">Size & foot</p>
 
           {/* System toggle */}
           <div className="flex gap-2">
@@ -345,7 +345,7 @@ export default function EditListingPage() {
                 className={`flex-1 h-11 rounded-full text-[15px] font-semibold border-2 transition-all ${
                   sizeSystem === sys
                     ? 'bg-foreground text-background border-foreground'
-                    : 'bg-white text-foreground border-black/10'
+                    : 'bg-card text-foreground border-border'
                 }`}
               >
                 {sys}
@@ -354,8 +354,8 @@ export default function EditListingPage() {
           </div>
 
           {/* Size dropdown */}
-          <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
-            <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">{sizeSystem} size</p>
+          <div className="bg-card rounded-2xl border border-border px-5 py-4">
+            <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-1.5">{sizeSystem} size</p>
             <select
               value={form.size}
               onChange={e => update('size', e.target.value)}
@@ -384,7 +384,7 @@ export default function EditListingPage() {
 
         {/* ── Condition ──────────────────────────────────────────── */}
         <div className="space-y-3">
-          <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider pl-1">Condition</p>
+          <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider pl-1">Condition</p>
           <div className="space-y-2.5">
             {CONDITIONS.map(c => (
               <RadioCard
@@ -400,12 +400,12 @@ export default function EditListingPage() {
 
         {/* ── Price & Description ────────────────────────────────── */}
         <div className="space-y-3">
-          <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider pl-1">Pricing</p>
+          <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider pl-1">Pricing</p>
 
-          <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
-            <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Price ({currency.code})</p>
+          <div className="bg-card rounded-2xl border border-border px-5 py-4">
+            <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-1.5">Price ({currency.code})</p>
             <div className="flex items-center gap-2">
-              <span className="text-[22px] font-bold text-black/20">{currency.symbol}</span>
+              <span className="text-[22px] font-bold text-muted-foreground/50">{currency.symbol}</span>
               <input
                 type="number"
                 inputMode="decimal"
@@ -414,13 +414,13 @@ export default function EditListingPage() {
                 placeholder="0.00"
                 min="0"
                 step="0.01"
-                className="flex-1 bg-transparent text-foreground text-[22px] font-bold outline-none placeholder-black/15 leading-snug"
+                className="flex-1 bg-transparent text-foreground text-[22px] font-bold outline-none placeholder:text-muted-foreground/40 leading-snug"
               />
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
-            <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">
+          <div className="bg-card rounded-2xl border border-border px-5 py-4">
+            <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-1.5">
               Description <span className="normal-case font-normal">(optional)</span>
             </p>
             <textarea
@@ -429,25 +429,25 @@ export default function EditListingPage() {
               placeholder="Colour, any defects, reason for selling…"
               rows={3}
               maxLength={500}
-              className="w-full bg-transparent text-foreground text-[15px] outline-none placeholder-black/20 resize-none leading-relaxed"
+              className="w-full bg-transparent text-foreground text-[15px] outline-none placeholder:text-muted-foreground/40 resize-none leading-relaxed"
             />
-            <p className="text-[10px] text-black/20 text-right mt-1">{form.description.length}/500</p>
+            <p className="text-[10px] text-muted-foreground/50 text-right mt-1">{form.description.length}/500</p>
           </div>
 
           {/* Swap toggle */}
           <button
             type="button"
             onClick={() => setSwapAvailable(v => !v)}
-            className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border-2 bg-white transition-all text-left active:scale-[0.99] ${
-              swapAvailable ? 'border-foreground shadow-sm' : 'border-black/10'
+            className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border-2 bg-card transition-all text-left active:scale-[0.99] ${
+              swapAvailable ? 'border-foreground shadow-sm' : 'border-border'
             }`}
           >
             <div>
               <p className="text-[16px] font-medium text-foreground">Open to swap</p>
-              <p className="text-[13px] text-black/40 mt-0.5">Mismatched pair? Find someone to swap with</p>
+              <p className="text-[13px] text-muted-foreground mt-0.5">Mismatched pair? Find someone to swap with</p>
             </div>
             <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ml-4 transition-all ${
-              swapAvailable ? 'border-foreground bg-foreground' : 'border-black/20'
+              swapAvailable ? 'border-foreground bg-foreground' : 'border-border'
             }`}>
               {swapAvailable && <Check className="w-3 h-3 text-background" />}
             </div>
@@ -455,7 +455,7 @@ export default function EditListingPage() {
         </div>
 
         {error && (
-          <div className="px-4 py-3 rounded-2xl bg-red-50 border border-red-100">
+          <div className="px-4 py-3 rounded-2xl bg-red-500/10 border border-red-500/20">
             <p className="text-[13px] text-red-600">{error}</p>
           </div>
         )}

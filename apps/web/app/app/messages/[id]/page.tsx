@@ -174,7 +174,7 @@ export default function MessageThreadPage({ params }: PageProps) {
   return (
     <div className="h-screen flex flex-col bg-background">
       {/* Header */}
-      <header className="bg-background border-b border-black/[0.07] px-4 py-3 flex items-center gap-3 flex-shrink-0">
+      <header className="bg-background border-b border-border px-4 py-3 flex items-center gap-3 flex-shrink-0">
         <Link href="/app/messages" className="text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="h-5 w-5" />
         </Link>
