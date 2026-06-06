@@ -52,6 +52,8 @@ export default function ListingDetailPage({ params }: PageProps) {
   const [contacting,    setContacting]    = useState(false);
   const [buyingNow,     setBuyingNow]     = useState(false);
   const [contactError,  setContactError]  = useState('');
+  const [photoIndex,    setPhotoIndex]    = useState(0);
+  const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -205,18 +207,14 @@ export default function ListingDetailPage({ params }: PageProps) {
     );
   }
 
-  const sym     = getCurrencySymbol(listing.currency || 'USD');
-  const isOwner = listing.user_id === userId;
+  const sym         = getCurrencySymbol(listing.currency || 'USD');
+  const isOwner     = listing.user_id === userId;
   const isSold      = listing.status === 'sold';
   const sideLabel   = listing.foot_side === 'L' ? 'Left' : listing.foot_side === 'R' ? 'Right' : 'Either';
   const sideVariant = listing.foot_side === 'L' ? 'left' as const : listing.foot_side === 'R' ? 'right' as const : 'default' as const;
-
-  const [photoIndex, setPhotoIndex] = useState(0);
-  const touchStartX = useRef<number | null>(null);
-  const photos = listing.photos.length > 0 ? listing.photos : [];
-
-  const prevPhoto = () => setPhotoIndex(i => Math.max(0, i - 1));
-  const nextPhoto = () => setPhotoIndex(i => Math.min(photos.length - 1, i + 1));
+  const photos      = listing.photos.length > 0 ? listing.photos : [];
+  const prevPhoto   = () => setPhotoIndex(i => Math.max(0, i - 1));
+  const nextPhoto   = () => setPhotoIndex(i => Math.min(photos.length - 1, i + 1));
 
   return (
     <div className="min-h-screen bg-background pb-24">
