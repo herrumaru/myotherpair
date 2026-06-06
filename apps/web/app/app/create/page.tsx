@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../../lib/supabase';
 import { ChevronLeft, ChevronRight, Camera, Check } from 'lucide-react';
+import { getCurrencyForCountry, extractCountry, type CurrencyInfo } from '../../../lib/currency';
 import {
   type SizeSystem,
   getSizes,
@@ -67,6 +68,7 @@ export default function CreatePage() {
   const [step,         setStep]         = useState(1);
   const [submitting,   setSubmitting]   = useState(false);
   const [sizeSystem,   setSizeSystem]   = useState<SizeSystem>('UK');
+  const [currency,     setCurrency]     = useState<CurrencyInfo>({ code: 'USD', symbol: '$', name: 'US Dollar' });
   const [error,        setError]        = useState('');
   const [photoFile,    setPhotoFile]    = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -80,9 +82,14 @@ export default function CreatePage() {
 
   useEffect(() => {
     setSizeSystem(detectSizeSystem());
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session?.user) { router.replace('/login'); return; }
       setUserId(session.user.id);
+      const { data } = await supabase.from('users').select('location').eq('id', session.user.id).single();
+      if (data?.location) {
+        const country = extractCountry(data.location as string);
+        setCurrency(getCurrencyForCountry(country));
+      }
     });
   }, [router]);
 
@@ -152,6 +159,7 @@ export default function CreatePage() {
         foot_side:   form.side,
         condition:   form.condition,
         price:       parseFloat(form.price),
+        currency:    currency.code,
         description: form.description.trim() || null,
         photos,
         status:      'active',
@@ -335,9 +343,11 @@ export default function CreatePage() {
         {step === 5 && (
           <div className="space-y-3">
             <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
-              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Price (USD)</p>
+              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">
+                Price ({currency.code})
+              </p>
               <div className="flex items-center gap-2">
-                <span className="text-[22px] font-bold text-black/20">$</span>
+                <span className="text-[22px] font-bold text-black/20">{currency.symbol}</span>
                 <input
                   type="number"
                   inputMode="decimal"

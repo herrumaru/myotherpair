@@ -8,6 +8,7 @@ import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { ArrowLeft, MapPin, MessageCircle, ArrowLeftRight, ShoppingCart, Loader2 } from 'lucide-react';
 import { formatSizeLabel } from '../../../../lib/sizeConversion';
+import { getCurrencySymbol } from '../../../../lib/currency';
 
 interface Listing {
   id: string;
@@ -17,6 +18,7 @@ interface Listing {
   foot_side: string;
   condition: string;
   price: number | null;
+  currency: string;
   description: string | null;
   photos: string[];
   user_id: string;
@@ -62,7 +64,7 @@ export default function ListingDetailPage({ params }: PageProps) {
     (async () => {
       const { data, error } = await supabase
         .from('listings')
-        .select('id, shoe_brand, shoe_model, size, foot_side, condition, price, description, photos, user_id, status')
+        .select('id, shoe_brand, shoe_model, size, foot_side, condition, price, currency, description, photos, user_id, status')
         .eq('id', listingId)
         .single();
 
@@ -77,6 +79,7 @@ export default function ListingDetailPage({ params }: PageProps) {
         foot_side:   d.foot_side   as string,
         condition:   d.condition   as string,
         price:       d.price       as number | null,
+        currency:    (d.currency as string) || 'USD',
         description: d.description as string | null,
         photos:      Array.isArray(d.photos) ? (d.photos as string[]) : [],
         user_id:     d.user_id     as string,
@@ -202,7 +205,8 @@ export default function ListingDetailPage({ params }: PageProps) {
     );
   }
 
-  const isOwner     = listing.user_id === userId;
+  const sym     = getCurrencySymbol(listing.currency || 'USD');
+  const isOwner = listing.user_id === userId;
   const isSold      = listing.status === 'sold';
   const sideLabel   = listing.foot_side === 'L' ? 'Left' : listing.foot_side === 'R' ? 'Right' : 'Either';
   const sideVariant = listing.foot_side === 'L' ? 'left' as const : listing.foot_side === 'R' ? 'right' as const : 'default' as const;
@@ -252,7 +256,7 @@ export default function ListingDetailPage({ params }: PageProps) {
             </p>
           </div>
           <p className="text-3xl font-bold text-foreground whitespace-nowrap flex-shrink-0">
-            {listing.price != null ? `$${listing.price}` : '$—'}
+            {listing.price != null ? `${sym}${listing.price}` : '—'}
           </p>
         </div>
 
@@ -315,7 +319,7 @@ export default function ListingDetailPage({ params }: PageProps) {
               >
                 {buyingNow
                   ? <><Loader2 className="h-4 w-4 animate-spin" /> Redirecting…</>
-                  : <><ShoppingCart className="h-5 w-5" /> Buy now · ${listing.price}</>
+                  : <><ShoppingCart className="h-5 w-5" /> Buy now · {sym}{listing.price}</>
                 }
               </button>
             )}
