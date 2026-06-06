@@ -19,8 +19,8 @@ export default function BottomNav() {
   const [userId,  setUserId]  = useState<string | null>(null);
   const [unread,  setUnread]  = useState(0);
 
-  // Hide on individual message threads — chat has its own full-screen layout
-  if (/^\/app\/messages\/.+/.test(pathname)) return null;
+  // Compute hidden state — but hooks must all be called before any early return
+  const hidden = /^\/app\/messages\/.+/.test(pathname);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -29,7 +29,7 @@ export default function BottomNav() {
   }, []);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || hidden) return;
 
     async function fetchUnread() {
       const { data: matches } = await supabase
@@ -67,7 +67,10 @@ export default function BottomNav() {
     }
 
     fetchUnread();
-  }, [userId, pathname]);
+  }, [userId, pathname, hidden]);
+
+  // Hide on individual message threads after all hooks have run
+  if (hidden) return null;
 
   function isActive(to: string) {
     if (to === '/app/browse') return pathname === '/app/browse' || pathname === '/app';
