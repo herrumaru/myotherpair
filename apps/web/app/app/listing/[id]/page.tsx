@@ -89,6 +89,8 @@ export default function ListingDetailPage() {
   const [offerOpen,    setOfferOpen]    = useState(false);
   const [offerPrice,   setOfferPrice]   = useState('');
   const [offerSending, setOfferSending] = useState(false);
+  const [reportState,  setReportState]  = useState<'idle' | 'open' | 'sending' | 'done'>('idle');
+  const [reportReason, setReportReason] = useState('fake_item');
   const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
@@ -238,6 +240,16 @@ export default function ListingDetailPage() {
       alert('Payment unavailable right now.');
       setBuyingNow(false);
     }
+  };
+
+  const handleReport = async () => {
+    if (!userId || !listingId || reportState === 'sending' || reportState === 'done') return;
+    setReportState('sending');
+    await supabase.from('reports').upsert(
+      { reporter_id: userId, listing_id: listingId, reason: reportReason },
+      { onConflict: 'reporter_id,listing_id' },
+    );
+    setReportState('done');
   };
 
   const handleSendOffer = async () => {
@@ -509,9 +521,62 @@ export default function ListingDetailPage() {
 
         {/* ── Report ───────────────────────────────────────────────── */}
         {!isOwner && (
-          <button className="w-full flex items-center justify-center gap-1.5 py-3 text-[13px] text-muted-foreground/50 hover:text-muted-foreground transition-colors">
-            <Flag className="h-3.5 w-3.5" /> Report this listing
-          </button>
+          <div className="rounded-2xl border border-black/6 overflow-hidden">
+            {reportState === 'idle' && (
+              <button
+                onClick={() => setReportState('open')}
+                className="w-full flex items-center justify-center gap-1.5 py-3.5 text-[13px] text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+              >
+                <Flag className="h-3.5 w-3.5" /> Report this listing
+              </button>
+            )}
+            {reportState === 'open' && (
+              <div className="p-4 space-y-3">
+                <p className="text-[13px] font-semibold text-foreground">Why are you reporting this?</p>
+                <div className="space-y-1.5">
+                  {[
+                    { value: 'fake_item',         label: 'Fake or counterfeit item' },
+                    { value: 'wrong_description', label: 'Doesn\'t match description' },
+                    { value: 'prohibited',        label: 'Prohibited item' },
+                    { value: 'spam',              label: 'Spam or scam' },
+                    { value: 'other',             label: 'Other' },
+                  ].map(r => (
+                    <button
+                      key={r.value}
+                      onClick={() => setReportReason(r.value)}
+                      className={`w-full text-left px-3 py-2.5 rounded-xl text-[13px] transition-colors ${reportReason === r.value ? 'bg-foreground text-background font-semibold' : 'bg-black/[0.04] text-foreground'}`}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    onClick={() => setReportState('idle')}
+                    className="flex-1 h-10 rounded-xl border border-black/10 text-[13px] text-foreground font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleReport}
+                    className="flex-1 h-10 rounded-xl bg-red-500 text-white text-[13px] font-semibold"
+                  >
+                    Submit report
+                  </button>
+                </div>
+              </div>
+            )}
+            {reportState === 'sending' && (
+              <div className="flex items-center justify-center gap-2 py-4 text-[13px] text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" /> Submitting…
+              </div>
+            )}
+            {reportState === 'done' && (
+              <div className="flex items-center justify-center gap-2 py-4 text-[13px] text-emerald-600 font-medium">
+                Report submitted. Thank you.
+              </div>
+            )}
+          </div>
         )}
       </div>
 

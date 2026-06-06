@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '../../../lib/supabase';
 import {
   Settings, MapPin, ShoppingBag, MessageCircle, LogOut,
-  Heart, ChevronRight, Sun, Moon, Globe, PlusCircle,
+  Heart, ChevronRight, Sun, Moon, Globe, PlusCircle, Package,
 } from 'lucide-react';
 import { formatSizeLabel } from '../../../lib/sizeConversion';
 import { useTheme } from '../../../lib/theme';
@@ -14,6 +14,7 @@ import { useLocale, LOCALES } from '../../../lib/locale';
 
 interface ProfileData {
   name?: string;
+  username?: string | null;
   email?: string;
   avatar_url?: string;
   location?: string;
@@ -22,6 +23,16 @@ interface ProfileData {
   is_amputee?: boolean;
   bio?: string | null;
   created_at?: string;
+}
+
+interface SoldListing {
+  id: string; shoe_brand: string; shoe_model: string;
+  price: number | null; photos: string[]; updated_at: string;
+}
+
+interface Purchase {
+  id: string; amount_cents: number; currency: string; created_at: string;
+  listing: { id: string; shoe_brand: string; shoe_model: string; photos: string[] } | null;
 }
 
 interface Stats { listings: number; matches: number; saved: number }
@@ -44,6 +55,8 @@ export default function ProfilePage() {
   const [stats,         setStats]         = useState<Stats>({ listings: 0, matches: 0, saved: 0 });
   const [loading,       setLoading]       = useState(true);
   const [savedListings, setSavedListings] = useState<SavedListing[]>([]);
+  const [soldListings,  setSoldListings]  = useState<SoldListing[]>([]);
+  const [purchases,     setPurchases]     = useState<Purchase[]>([]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -55,7 +68,7 @@ export default function ProfilePage() {
     if (!userId) return;
     (async () => {
       const [profileRes, listingsRes, matchesRes, savedCountRes, authUser] = await Promise.all([
-        supabase.from('users').select('*').eq('id', userId).single(),
+        supabase.from('users').select('name, username, email, avatar_url, location, foot_size_left, foot_size_right, is_amputee, bio, created_at').eq('id', userId).single(),
         supabase.from('listings').select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('status', 'active'),
         supabase.from('matches').select('id', { count: 'exact', head: true }).or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`),
         supabase.from('saved_listings').select('id', { count: 'exact', head: true }).eq('user_id', userId),
@@ -83,9 +96,25 @@ export default function ProfilePage() {
         .limit(8);
 
       if (savedData) {
-        const listings = (savedData as { listing_id: string; listings: SavedListing | null }[])
+        const listings = (savedData as unknown as { listing_id: string; listings: SavedListing | null }[])
           .map(r => r.listings).filter((l): l is SavedListing => l !== null);
         setSavedListings(listings);
+      }
+
+      const [soldRes, purchasesRes] = await Promise.all([
+        supabase.from('listings')
+          .select('id, shoe_brand, shoe_model, price, photos, updated_at')
+          .eq('user_id', userId).eq('status', 'sold').order('updated_at', { ascending: false }).limit(12),
+        supabase.from('orders')
+          .select('id, amount_cents, currency, created_at, listings(id, shoe_brand, shoe_model, photos)')
+          .eq('buyer_id', userId).eq('status', 'paid').order('created_at', { ascending: false }).limit(12),
+      ]);
+
+      if (soldRes.data) {
+        setSoldListings(soldRes.data as SoldListing[]);
+      }
+      if (purchasesRes.data) {
+        setPurchases((purchasesRes.data as unknown as Purchase[]));
       }
 
       setLoading(false);
@@ -184,6 +213,9 @@ export default function ProfilePage() {
           <h2 className="text-[22px] font-bold text-foreground tracking-[-0.02em] leading-tight">
             {name || 'Set your name'}
           </h2>
+          {profile.username && (
+            <p className="text-[13px] text-black/35 font-medium mt-0.5">@{profile.username}</p>
+          )}
           {profile.location && (
             <div className="flex items-center gap-1 text-black/40 mt-1">
               <MapPin className="w-3 h-3" />
@@ -314,37 +346,106 @@ export default function ProfilePage() {
 
           {/* ACTIVITY TAB */}
           {activeTab === 'activity' && (
-            <div className="space-y-0.5">
-              <Link href="/app/listings" className="flex items-center gap-4 py-4 border-b border-black/[0.06]">
-                <div className="w-9 h-9 rounded-xl bg-black/[0.05] flex items-center justify-center flex-shrink-0">
-                  <ShoppingBag className="w-4 h-4 text-black/40" />
+            <div className="space-y-5">
+
+              {/* Quick links */}
+              <div className="bg-white rounded-2xl border border-black/[0.07] overflow-hidden">
+                <Link href="/app/listings" className="flex items-center gap-4 px-4 py-3.5 border-b border-black/[0.06] active:bg-black/[0.02]">
+                  <div className="w-9 h-9 rounded-xl bg-black/[0.05] flex items-center justify-center flex-shrink-0">
+                    <ShoppingBag className="w-4 h-4 text-black/40" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[14px] font-semibold text-foreground">My Listings</p>
+                    <p className="text-[12px] text-black/35">{stats.listings} active</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-black/20" />
+                </Link>
+                <Link href="/app/messages" className="flex items-center gap-4 px-4 py-3.5 border-b border-black/[0.06] active:bg-black/[0.02]">
+                  <div className="w-9 h-9 rounded-xl bg-black/[0.05] flex items-center justify-center flex-shrink-0">
+                    <MessageCircle className="w-4 h-4 text-black/40" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[14px] font-semibold text-foreground">Messages</p>
+                    <p className="text-[12px] text-black/35">{stats.matches} conversation{stats.matches !== 1 ? 's' : ''}</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-black/20" />
+                </Link>
+                <Link href="/app/browse" className="flex items-center gap-4 px-4 py-3.5 active:bg-black/[0.02]">
+                  <div className="w-9 h-9 rounded-xl bg-black/[0.05] flex items-center justify-center flex-shrink-0">
+                    <Heart className="w-4 h-4 text-black/40" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[14px] font-semibold text-foreground">Saved Shoes</p>
+                    <p className="text-[12px] text-black/35">{stats.saved} saved</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-black/20" />
+                </Link>
+              </div>
+
+              {/* Sold */}
+              {soldListings.length > 0 && (
+                <div>
+                  <p className="text-[11px] font-bold text-black/30 tracking-[0.15em] uppercase mb-2 px-1">Sold</p>
+                  <div className="bg-white rounded-2xl border border-black/[0.07] overflow-hidden">
+                    {soldListings.map((l, i) => (
+                      <Link
+                        key={l.id}
+                        href={`/app/listing/${l.id}`}
+                        className={`flex items-center gap-3 px-4 py-3 active:bg-black/[0.02] ${i < soldListings.length - 1 ? 'border-b border-black/[0.06]' : ''}`}
+                      >
+                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-black/5 flex-shrink-0">
+                          {l.photos[0]
+                            ? <img src={l.photos[0]} alt="" className="w-full h-full object-cover" />
+                            : <div className="w-full h-full flex items-center justify-center text-lg opacity-20">👟</div>
+                          }
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-semibold text-foreground truncate">{l.shoe_brand} {l.shoe_model}</p>
+                          <p className="text-[11px] text-black/35">{l.price != null ? `$${l.price}` : '—'} · sold</p>
+                        </div>
+                        <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Sold</span>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-[14px] font-semibold text-foreground">My Listings</p>
-                  <p className="text-[12px] text-black/35">{stats.listings} active</p>
+              )}
+
+              {/* Purchases */}
+              {purchases.length > 0 && (
+                <div>
+                  <p className="text-[11px] font-bold text-black/30 tracking-[0.15em] uppercase mb-2 px-1">Purchases</p>
+                  <div className="bg-white rounded-2xl border border-black/[0.07] overflow-hidden">
+                    {purchases.map((p, i) => (
+                      <div
+                        key={p.id}
+                        className={`flex items-center gap-3 px-4 py-3 ${i < purchases.length - 1 ? 'border-b border-black/[0.06]' : ''}`}
+                      >
+                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-black/5 flex-shrink-0">
+                          {p.listing?.photos[0]
+                            ? <img src={p.listing.photos[0]} alt="" className="w-full h-full object-cover" />
+                            : <div className="w-full h-full flex items-center justify-center"><Package className="w-4 h-4 text-black/20" /></div>
+                          }
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-semibold text-foreground truncate">
+                            {p.listing ? `${p.listing.shoe_brand} ${p.listing.shoe_model}` : 'Listing removed'}
+                          </p>
+                          <p className="text-[11px] text-black/35">
+                            ${(p.amount_cents / 100).toFixed(2)} · {new Date(p.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
+                        </div>
+                        <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Paid</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-black/20" />
-              </Link>
-              <Link href="/app/messages" className="flex items-center gap-4 py-4 border-b border-black/[0.06]">
-                <div className="w-9 h-9 rounded-xl bg-black/[0.05] flex items-center justify-center flex-shrink-0">
-                  <MessageCircle className="w-4 h-4 text-black/40" />
+              )}
+
+              {soldListings.length === 0 && purchases.length === 0 && (
+                <div className="text-center py-10">
+                  <p className="text-[14px] text-black/30">No transaction history yet</p>
                 </div>
-                <div className="flex-1">
-                  <p className="text-[14px] font-semibold text-foreground">Messages</p>
-                  <p className="text-[12px] text-black/35">{stats.matches} conversation{stats.matches !== 1 ? 's' : ''}</p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-black/20" />
-              </Link>
-              <Link href="/app/browse" className="flex items-center gap-4 py-4">
-                <div className="w-9 h-9 rounded-xl bg-black/[0.05] flex items-center justify-center flex-shrink-0">
-                  <Heart className="w-4 h-4 text-black/40" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-[14px] font-semibold text-foreground">Saved Shoes</p>
-                  <p className="text-[12px] text-black/35">{stats.saved} saved</p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-black/20" />
-              </Link>
+              )}
             </div>
           )}
 

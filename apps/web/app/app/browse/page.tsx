@@ -27,6 +27,7 @@ interface Listing {
   price: number | null;
   photos: string[];
   swap_available: boolean;
+  location: string | null;
 }
 
 interface Filters {
@@ -36,10 +37,11 @@ interface Filters {
   brand: string;
   maxPrice: number;
   swapOnly: boolean;
+  location: string;
 }
 
 const DEFAULT_FILTERS: Filters = {
-  size: 'all', side: 'all', condition: 'all', brand: 'all', maxPrice: 500, swapOnly: false,
+  size: 'all', side: 'all', condition: 'all', brand: 'all', maxPrice: 500, swapOnly: false, location: '',
 };
 
 const CONDITIONS = ['new_with_tags','new_without_tags','excellent','good','fair','poor'];
@@ -271,6 +273,18 @@ function FiltersPanel({
         </div>
       </div>
 
+      {/* Location */}
+      <div>
+        <label className="text-[11px] text-muted-foreground font-medium mb-1 block">Location</label>
+        <input
+          type="text"
+          value={filters.location}
+          onChange={e => onChange({ ...filters, location: e.target.value })}
+          placeholder="City or country…"
+          className="w-full h-9 rounded-lg bg-secondary border border-border/30 text-sm text-foreground px-2 outline-none focus:border-accent/40 transition-colors placeholder:text-muted-foreground/50"
+        />
+      </div>
+
       {/* Swap only toggle */}
       <div className="flex items-center justify-between">
         <span className="text-[13px] font-medium text-foreground">Open to swap only</span>
@@ -319,10 +333,12 @@ export default function BrowsePage() {
     const condition = params.get('condition');
     const swap      = params.get('swap');
     const q         = params.get('q');
+    const loc       = params.get('location');
     if (side)      updates.side      = side;
     if (brand)     updates.brand     = brand;
     if (condition) updates.condition = condition;
     if (swap)      updates.swapOnly  = swap === 'true';
+    if (loc)       updates.location  = loc;
     if (q)         setSearchQuery(q);
     if (Object.keys(updates).length) setFilters(prev => ({ ...prev, ...updates }));
   }, []);
@@ -346,7 +362,7 @@ export default function BrowsePage() {
     (async () => {
       const { data, error } = await supabase
         .from('listings')
-        .select('id, shoe_brand, shoe_model, size, foot_side, condition, price, photos, swap_available')
+        .select('id, shoe_brand, shoe_model, size, foot_side, condition, price, photos, swap_available, users!user_id(location)')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(80);
@@ -364,6 +380,7 @@ export default function BrowsePage() {
           price:          r.price          as number | null,
           photos:         Array.isArray(r.photos) ? (r.photos as string[]) : [],
           swap_available: !!(r.swap_available),
+          location:   (r.users as { location?: string } | null)?.location ?? null,
         })),
       );
       setLoading(false);
@@ -415,6 +432,10 @@ export default function BrowsePage() {
       }
       // Swap only
       if (filters.swapOnly && !l.swap_available) return false;
+      // Location
+      if (filters.location) {
+        if (!l.location?.toLowerCase().includes(filters.location.toLowerCase())) return false;
+      }
       return true;
     });
   }, [listings, filters, searchQuery, sizeSystem]);
@@ -422,7 +443,8 @@ export default function BrowsePage() {
   const activeFilterCount =
     [filters.size, filters.side, filters.condition, filters.brand].filter(f => f !== 'all').length +
     (filters.maxPrice < 500 ? 1 : 0) +
-    (filters.swapOnly ? 1 : 0);
+    (filters.swapOnly ? 1 : 0) +
+    (filters.location ? 1 : 0);
 
   return (
     <div className="min-h-screen bg-background pb-24">

@@ -22,6 +22,7 @@ export default function EditProfilePage() {
 
   const [form, setForm] = useState({
     name:      '',
+    username:  '',
     location:  '',
     leftSize:  '',
     rightSize: '',
@@ -39,17 +40,18 @@ export default function EditProfilePage() {
       setUserId(session.user.id);
       const { data } = await supabase
         .from('users')
-        .select('name, location, foot_size_left, foot_size_right, is_amputee, avatar_url, bio')
+        .select('name, username, location, foot_size_left, foot_size_right, is_amputee, avatar_url, bio')
         .eq('id', session.user.id)
         .single();
       if (data) {
         const d = data as {
-          name?: string; location?: string;
+          name?: string; username?: string | null; location?: string;
           foot_size_left?: number | null; foot_size_right?: number | null;
           is_amputee?: boolean; avatar_url?: string | null; bio?: string | null;
         };
         setForm({
           name:      d.name      ?? '',
+          username:  d.username  ?? '',
           location:  d.location  ?? '',
           leftSize:  d.foot_size_left  != null ? String(d.foot_size_left)  : '',
           rightSize: d.foot_size_right != null ? String(d.foot_size_right) : '',
@@ -92,8 +94,16 @@ export default function EditProfilePage() {
         }
       }
 
+      const usernameVal = form.username.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+      if (usernameVal && (usernameVal.length < 3 || usernameVal.length > 30)) {
+        setError('Username must be 3–30 characters (letters, numbers, underscores)');
+        setSaving(false);
+        return;
+      }
+
       const { error: updateErr } = await supabase.from('users').update({
         name:            form.name.trim(),
+        username:        usernameVal || null,
         location:        form.location.trim(),
         foot_size_left:  form.leftSize  ? parseFloat(form.leftSize)  : null,
         foot_size_right: form.rightSize ? parseFloat(form.rightSize) : null,
@@ -183,6 +193,22 @@ export default function EditProfilePage() {
               maxLength={100}
               className={inputCls}
             />
+          </div>
+
+          {/* Username */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] text-muted-foreground/50 tracking-[0.12em] uppercase font-medium">Username</label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 text-sm font-medium select-none">@</span>
+              <input
+                value={form.username}
+                onChange={e => update('username', e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                placeholder="your_username"
+                maxLength={30}
+                className={`${inputCls} pl-7`}
+              />
+            </div>
+            <p className="text-[10px] text-muted-foreground/30">3–30 characters. Letters, numbers, underscores only.</p>
           </div>
 
           {/* Location */}
