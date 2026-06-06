@@ -35,10 +35,11 @@ interface Filters {
   condition: string;
   brand: string;
   maxPrice: number;
+  swapOnly: boolean;
 }
 
 const DEFAULT_FILTERS: Filters = {
-  size: 'all', side: 'all', condition: 'all', brand: 'all', maxPrice: 500,
+  size: 'all', side: 'all', condition: 'all', brand: 'all', maxPrice: 500, swapOnly: false,
 };
 
 const CONDITIONS = ['new_with_tags','new_without_tags','excellent','good','fair','poor'];
@@ -270,6 +271,18 @@ function FiltersPanel({
         </div>
       </div>
 
+      {/* Swap only toggle */}
+      <div className="flex items-center justify-between">
+        <span className="text-[13px] font-medium text-foreground">Open to swap only</span>
+        <button
+          type="button"
+          onClick={() => onChange({ ...filters, swapOnly: !filters.swapOnly })}
+          className={`w-11 h-6 rounded-full transition-colors relative ${filters.swapOnly ? 'bg-teal-500' : 'bg-black/15'}`}
+        >
+          <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${filters.swapOnly ? 'left-5' : 'left-0.5'}`} />
+        </button>
+      </div>
+
       <Button variant="accent" className="w-full rounded-xl" onClick={onClose}>
         Apply filters
       </Button>
@@ -296,9 +309,22 @@ export default function BrowsePage() {
     });
   }, []);
 
-  // Detect locale size system on mount
+  // Detect locale size system on mount + read URL params from search page categories
   useEffect(() => {
     setSizeSystem(detectSizeSystem());
+    const params = new URLSearchParams(window.location.search);
+    const updates: Partial<Filters> = {};
+    const side      = params.get('side');
+    const brand     = params.get('brand');
+    const condition = params.get('condition');
+    const swap      = params.get('swap');
+    const q         = params.get('q');
+    if (side)      updates.side      = side;
+    if (brand)     updates.brand     = brand;
+    if (condition) updates.condition = condition;
+    if (swap)      updates.swapOnly  = swap === 'true';
+    if (q)         setSearchQuery(q);
+    if (Object.keys(updates).length) setFilters(prev => ({ ...prev, ...updates }));
   }, []);
 
   // Load saved listing IDs from Supabase
@@ -387,13 +413,16 @@ export default function BrowsePage() {
         const targetUK = toUKCanonical(filters.size, sizeSystem);
         if (l.size !== targetUK) return false;
       }
+      // Swap only
+      if (filters.swapOnly && !l.swap_available) return false;
       return true;
     });
   }, [listings, filters, searchQuery, sizeSystem]);
 
   const activeFilterCount =
     [filters.size, filters.side, filters.condition, filters.brand].filter(f => f !== 'all').length +
-    (filters.maxPrice < 500 ? 1 : 0);
+    (filters.maxPrice < 500 ? 1 : 0) +
+    (filters.swapOnly ? 1 : 0);
 
   return (
     <div className="min-h-screen bg-background pb-24">
