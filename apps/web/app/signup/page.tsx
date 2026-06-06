@@ -344,13 +344,9 @@ export default function SignupPage() {
       is_amputee:      form.isAmputee,
     };
 
-    if (data.session) {
-      await supabase.from('users').upsert({ id: data.session.user.id, email: form.email, ...profilePayload });
-      router.replace('/app');
-    } else {
-      sessionStorage.setItem('signup_profile', JSON.stringify(profilePayload));
-      router.replace(`/verify-otp?email=${encodeURIComponent(form.email)}`);
-    }
+    if (!data.session) { setError('Signup failed. Please try again.'); setLoading(false); return; }
+    await supabase.from('users').upsert({ id: data.session.user.id, email: form.email, ...profilePayload });
+    router.replace('/app');
   }
 
   const changeSizeSystem = (sys: SizeSystem) => {
