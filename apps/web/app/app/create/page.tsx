@@ -3,8 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../../lib/supabase';
-import { Button } from '../../components/ui/Button';
-import { ImagePlus, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Camera, Check } from 'lucide-react';
 import {
   type SizeSystem,
   getSizes,
@@ -16,122 +15,77 @@ import {
 type Foot      = 'L' | 'R' | 'single';
 type Condition = 'new_with_tags' | 'new_without_tags' | 'excellent' | 'good' | 'fair' | 'poor';
 
-const CONDITIONS: { value: Condition; label: string }[] = [
-  { value: 'new_with_tags',    label: 'New (tags on)' },
-  { value: 'new_without_tags', label: 'New'           },
-  { value: 'excellent',        label: 'Excellent'     },
-  { value: 'good',             label: 'Good'          },
-  { value: 'fair',             label: 'Fair'          },
-  { value: 'poor',             label: 'Poor'          },
+const BRANDS = ['Nike', 'Adidas', 'Jordan', 'New Balance', 'Vans', 'Converse', 'Timberland', 'Puma', 'Reebok', 'Other'];
+
+const CONDITIONS: { value: Condition; label: string; sub: string }[] = [
+  { value: 'new_with_tags',    label: 'New with tags',   sub: 'Unworn, original tags attached' },
+  { value: 'new_without_tags', label: 'New',             sub: 'Unworn, no tags' },
+  { value: 'excellent',        label: 'Excellent',       sub: 'Worn once or twice, like new' },
+  { value: 'good',             label: 'Good',            sub: 'Lightly worn, minor signs of use' },
+  { value: 'fair',             label: 'Fair',            sub: 'Visible wear, fully functional' },
+  { value: 'poor',             label: 'Poor',            sub: 'Heavy wear or defects' },
 ];
 
-const BRANDS = ['Nike','Adidas','Jordan','New Balance','Vans','Converse','Timberland','Puma','Reebok','Other'];
+const SIDES: { value: Foot; label: string; sub: string }[] = [
+  { value: 'L',      label: 'Left foot',  sub: 'Single left shoe only' },
+  { value: 'R',      label: 'Right foot', sub: 'Single right shoe only' },
+  { value: 'single', label: 'Either',     sub: 'Fits both or selling as single' },
+];
 
-// ─── Size system toggle ───────────────────────────────────────────────────────
+const TOTAL_STEPS = 5;
 
-function SizeSystemToggle({ value, onChange }: { value: SizeSystem; onChange: (v: SizeSystem) => void }) {
+function RadioCard({
+  label, sub, selected, onClick,
+}: {
+  label: string; sub?: string; selected: boolean; onClick: () => void;
+}) {
   return (
-    <div className="flex gap-1.5">
-      {(['UK', 'US', 'EU'] as SizeSystem[]).map(sys => (
-        <button
-          key={sys}
-          type="button"
-          onClick={() => onChange(sys)}
-          className={`flex-1 h-9 rounded-lg text-xs font-semibold border transition-all duration-200 ${
-            value === sys
-              ? 'bg-accent text-accent-foreground border-accent shadow-sm'
-              : 'bg-card text-muted-foreground border-border/40 hover:border-border'
-          }`}
-        >
-          {sys}
-        </button>
-      ))}
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border-2 bg-white transition-all text-left active:scale-[0.99] ${
+        selected ? 'border-foreground shadow-sm' : 'border-black/10'
+      }`}
+    >
+      <div>
+        <p className="text-[16px] font-medium text-foreground">{label}</p>
+        {sub && <p className="text-[13px] text-black/40 mt-0.5">{sub}</p>}
+      </div>
+      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ml-4 transition-all ${
+        selected ? 'border-foreground bg-foreground' : 'border-black/20'
+      }`}>
+        {selected && <Check className="w-3 h-3 text-background" />}
+      </div>
+    </button>
   );
 }
-
-// ─── Conversion tooltip ───────────────────────────────────────────────────────
-
-function ConversionTooltip() {
-  const [open, setOpen] = useState(false);
-  return (
-    <span className="relative inline-flex items-center">
-      <button
-        type="button"
-        onClick={() => setOpen(v => !v)}
-        className="text-muted-foreground/40 hover:text-accent transition-colors"
-        aria-label="Size conversion chart"
-      >
-        <Info className="h-3.5 w-3.5" />
-      </button>
-      {open && (
-        <div className="absolute bottom-6 left-0 z-50 w-52 bg-card border border-border/40 rounded-xl shadow-lg p-3 text-[11px] text-foreground">
-          <p className="font-semibold mb-2 text-[10px] uppercase tracking-widest text-muted-foreground">
-            Quick reference
-          </p>
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="text-muted-foreground/60">
-                <th className="text-left pb-1 font-medium">UK</th>
-                <th className="text-left pb-1 font-medium">US</th>
-                <th className="text-left pb-1 font-medium">EU</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { uk: '5', us: '6', eu: '38' },
-                { uk: '6', us: '7', eu: '39' },
-                { uk: '7', us: '8', eu: '41' },
-                { uk: '8', us: '9', eu: '42' },
-                { uk: '9', us: '10', eu: '43' },
-                { uk: '10', us: '11', eu: '44' },
-                { uk: '11', us: '12', eu: '45' },
-              ].map(r => (
-                <tr key={r.uk} className="border-t border-border/20">
-                  <td className="py-0.5">{r.uk}</td>
-                  <td className="py-0.5">{r.us}</td>
-                  <td className="py-0.5">{r.eu}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <p className="text-muted-foreground/50 mt-2 text-[10px]">Mens/unisex sizing.</p>
-        </div>
-      )}
-    </span>
-  );
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function CreatePage() {
   const router  = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [userId,       setUserId]       = useState<string | null>(null);
+  const [step,         setStep]         = useState(1);
   const [submitting,   setSubmitting]   = useState(false);
   const [error,        setError]        = useState('');
   const [photoFile,    setPhotoFile]    = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-
-  const [sizeSystem, setSizeSystem] = useState<SizeSystem>('UK');
+  const [sizeSystem,   setSizeSystem]   = useState<SizeSystem>('UK');
 
   const [form, setForm] = useState({
-    brand:       '',
-    model:       '',
-    size:        '',           // raw value in selected sizeSystem
-    side:        '' as Foot | '',
-    condition:   '' as Condition | '',
-    price:       '',
-    description: '',
+    brand: '', model: '', size: '',
+    side: '' as Foot | '',
+    condition: '' as Condition | '',
+    price: '', description: '',
   });
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) setUserId(session.user.id);
-    });
     setSizeSystem(detectSizeSystem());
-  }, []);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user) { router.replace('/login'); return; }
+      setUserId(session.user.id);
+    });
+  }, [router]);
 
   const update = (key: string, value: string) =>
     setForm(prev => ({ ...prev, [key]: value }));
@@ -144,22 +98,32 @@ export default function CreatePage() {
     setPhotoPreview(URL.createObjectURL(file));
   };
 
-  const handleSizeSystemChange = (sys: SizeSystem) => {
-    setSizeSystem(sys);
-    update('size', '');   // reset size when system changes
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.brand || !form.model || !form.size || !form.side || !form.condition || !form.price) {
-      setError('Please fill in all required fields.');
-      return;
+  const canProceed = (() => {
+    switch (step) {
+      case 1: return true; // photo optional
+      case 2: return !!form.brand && form.model.trim().length > 0;
+      case 3: return !!form.size && !!form.side;
+      case 4: return !!form.condition;
+      case 5: return form.price.trim().length > 0 && parseFloat(form.price) > 0;
+      default: return false;
     }
-    if (!userId) {
-      setError('You must be logged in to create a listing.');
-      return;
-    }
+  })();
 
+  function handleBack() {
+    setError('');
+    if (step === 1) router.push('/app');
+    else setStep(s => s - 1);
+  }
+
+  async function handleNext() {
+    if (!canProceed) return;
+    setError('');
+    if (step < TOTAL_STEPS) { setStep(s => s + 1); return; }
+    await handleSubmit();
+  }
+
+  async function handleSubmit() {
+    if (!userId) return;
     setSubmitting(true);
     setError('');
 
@@ -179,177 +143,261 @@ export default function CreatePage() {
         }
       }
 
-      // Convert to UK canonical size for consistent DB storage
       const ukSize = toUKCanonical(form.size, sizeSystem);
 
       const { error: insertErr } = await supabase.from('listings').insert({
-        user_id:    userId,
-        shoe_brand: form.brand,
-        shoe_model: form.model,
-        size:       ukSize,
-        foot_side:  form.side,
-        condition:  form.condition,
-        price:      parseFloat(form.price),
-        description: form.description || null,
+        user_id:     userId,
+        shoe_brand:  form.brand,
+        shoe_model:  form.model.trim(),
+        size:        ukSize,
+        foot_side:   form.side,
+        condition:   form.condition,
+        price:       parseFloat(form.price),
+        description: form.description.trim() || null,
         photos,
-        status:     'active',
+        status:      'active',
       });
 
       if (insertErr) throw insertErr;
-      router.push('/app/browse');
+      router.push('/app/listings');
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to create listing. Please try again.');
       setSubmitting(false);
     }
+  }
+
+  const sizes = getSizes(sizeSystem);
+
+  const stepConfig: Record<number, { title: string; subtitle: string }> = {
+    1: { title: 'Add a photo',        subtitle: 'A clear photo gets 3× more interest.' },
+    2: { title: 'What shoe is it?',   subtitle: 'Brand and model help buyers find you.' },
+    3: { title: 'Size and foot',      subtitle: 'Which foot does this shoe fit?' },
+    4: { title: 'What\'s the condition?', subtitle: 'Be honest — buyers appreciate it.' },
+    5: { title: 'Set your price',     subtitle: 'You can edit this anytime.' },
   };
 
-  const selectCls = 'w-full h-11 rounded-xl bg-card border border-border/40 text-sm text-foreground px-3 outline-none focus:border-accent/50 transition-colors appearance-none';
-  const inputCls  = 'w-full h-11 rounded-xl bg-card border border-border/40 text-sm text-foreground px-3 outline-none focus:border-accent/50 transition-colors placeholder:text-muted-foreground';
-  const sizes     = getSizes(sizeSystem);
+  const { title, subtitle } = stepConfig[step];
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <header className="sticky top-0 z-40 bg-background border-b border-black/[0.07]">
-        <div className="flex items-end justify-between px-5 pt-5 pb-3 max-w-lg mx-auto">
-          <h1 className="text-[28px] font-bold text-foreground leading-none tracking-[-0.02em]">List a Shoe</h1>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background flex flex-col">
 
-      <div className="max-w-lg mx-auto px-4 py-5">
-        <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Progress bar */}
+      <div className="h-[3px] bg-black/8 w-full flex-shrink-0">
+        <div
+          className="h-full bg-foreground transition-all duration-500 ease-out"
+          style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
+        />
+      </div>
 
-          {/* Photo upload */}
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            className="w-full aspect-[16/10] rounded-2xl border-2 border-dashed border-accent/25 bg-accent/[0.03] flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-accent/[0.06] hover:border-accent/40 transition-all duration-300 group overflow-hidden"
-          >
-            {photoPreview ? (
-              <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
-            ) : (
-              <>
-                <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <ImagePlus className="h-6 w-6 text-accent" />
+      {/* Back button */}
+      <div className="px-5 pt-12 pb-2 flex-shrink-0">
+        <button onClick={handleBack} className="flex items-center justify-center -ml-1 p-1" aria-label="Back">
+          <ChevronLeft className="w-7 h-7 text-foreground" />
+        </button>
+      </div>
+
+      {/* Scrollable content */}
+      <div className="flex-1 px-6 pt-4 pb-6 overflow-y-auto">
+        <h1 className="font-display text-[2.6rem] font-bold text-foreground leading-[1.1] tracking-[-0.025em] text-center mb-3">
+          {title}
+        </h1>
+        <p className="text-center text-black/40 text-[15px] mb-10 leading-relaxed max-w-[280px] mx-auto">
+          {subtitle}
+        </p>
+
+        {/* ── Step 1: Photo ──────────────────────────────────────────────── */}
+        {step === 1 && (
+          <div className="space-y-4">
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="w-full aspect-square rounded-3xl overflow-hidden bg-white border-2 border-dashed border-black/15 flex flex-col items-center justify-center gap-3 transition-all active:scale-[0.98] group"
+            >
+              {photoPreview ? (
+                <div className="relative w-full h-full">
+                  <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <p className="text-white text-sm font-semibold">Change photo</p>
+                  </div>
                 </div>
-                <p className="text-sm font-semibold text-accent">Add photos</p>
-                <p className="text-xs text-muted-foreground">Tap to upload shoe images</p>
-              </>
+              ) : (
+                <>
+                  <div className="w-16 h-16 rounded-2xl bg-black/5 flex items-center justify-center group-hover:bg-black/8 transition-colors">
+                    <Camera className="h-7 w-7 text-black/30" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-[15px] font-semibold text-foreground">Tap to add photo</p>
+                    <p className="text-[13px] text-black/35 mt-0.5">JPG, PNG or HEIC</p>
+                  </div>
+                </>
+              )}
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+            {!photoPreview && (
+              <p className="text-center text-[13px] text-black/30">You can skip this and add a photo later</p>
             )}
-          </button>
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+          </div>
+        )}
 
-          {/* Brand & Model */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="text-xs text-muted-foreground font-medium">Brand *</label>
-              <select value={form.brand} onChange={e => update('brand', e.target.value)} className={selectCls}>
+        {/* ── Step 2: Brand & Model ──────────────────────────────────────── */}
+        {step === 2 && (
+          <div className="space-y-3">
+            <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
+              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Brand</p>
+              <select
+                value={form.brand}
+                onChange={e => update('brand', e.target.value)}
+                className="w-full bg-transparent text-foreground text-[17px] outline-none appearance-none leading-snug"
+              >
                 <option value="">Select brand</option>
                 {BRANDS.map(b => <option key={b} value={b}>{b}</option>)}
               </select>
             </div>
-            <div className="space-y-1.5">
-              <label className="text-xs text-muted-foreground font-medium">Model *</label>
+            <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
+              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Model</p>
               <input
+                type="text"
                 value={form.model}
                 onChange={e => update('model', e.target.value)}
-                placeholder="e.g. Air Force 1"
-                className={inputCls}
+                placeholder="e.g. Air Force 1, Chuck Taylor…"
+                className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder-black/20 leading-snug"
+                onKeyDown={e => e.key === 'Enter' && canProceed && handleNext()}
               />
             </div>
           </div>
+        )}
 
-          {/* Size system + size dropdown */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-                Size system <ConversionTooltip />
-              </label>
-              <SizeSystemToggle value={sizeSystem} onChange={handleSizeSystemChange} />
+        {/* ── Step 3: Size & Side ────────────────────────────────────────── */}
+        {step === 3 && (
+          <div className="space-y-4">
+            {/* Size system toggle */}
+            <div className="flex gap-2">
+              {(['UK', 'US', 'EU'] as SizeSystem[]).map(sys => (
+                <button
+                  key={sys}
+                  type="button"
+                  onClick={() => { setSizeSystem(sys); update('size', ''); }}
+                  className={`flex-1 h-11 rounded-full text-sm font-semibold border-2 transition-all ${
+                    sizeSystem === sys ? 'bg-foreground text-background border-foreground' : 'bg-white text-foreground border-black/10'
+                  }`}
+                >
+                  {sys}
+                </button>
+              ))}
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs text-muted-foreground font-medium">Shoe size *</label>
+            {/* Size picker */}
+            <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
+              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Shoe size</p>
               <select
                 value={form.size}
                 onChange={e => update('size', e.target.value)}
-                className={selectCls}
+                className="w-full bg-transparent text-foreground text-[17px] outline-none appearance-none leading-snug"
               >
                 <option value="">Select size</option>
-                {sizes.map(s => (
-                  <option key={s} value={s}>
-                    {formatSizeLabel(s, sizeSystem)}
-                  </option>
-                ))}
-              </select>
-              {form.size && (
-                <p className="text-[11px] text-muted-foreground/60 pl-1">
-                  Stored as UK {toUKCanonical(form.size, sizeSystem)} — visible to all buyers in their preferred system.
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Side & Condition */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="text-xs text-muted-foreground font-medium">Side *</label>
-              <select value={form.side} onChange={e => update('side', e.target.value)} className={selectCls}>
-                <option value="">Side</option>
-                <option value="L">Left</option>
-                <option value="R">Right</option>
-                <option value="single">Either</option>
+                {sizes.map(s => <option key={s} value={s}>{formatSizeLabel(s, sizeSystem)}</option>)}
               </select>
             </div>
-            <div className="space-y-1.5">
-              <label className="text-xs text-muted-foreground font-medium">Condition *</label>
-              <select value={form.condition} onChange={e => update('condition', e.target.value)} className={selectCls}>
-                <option value="">Condition</option>
-                {CONDITIONS.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
-              </select>
+
+            {/* Foot side */}
+            <div className="space-y-2.5">
+              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider pl-1">Which foot?</p>
+              {SIDES.map(s => (
+                <RadioCard
+                  key={s.value}
+                  label={s.label}
+                  sub={s.sub}
+                  selected={form.side === s.value}
+                  onClick={() => update('side', s.value)}
+                />
+              ))}
             </div>
           </div>
+        )}
 
-          {/* Price */}
-          <div className="space-y-1.5">
-            <label className="text-xs text-muted-foreground font-medium">Price ($) *</label>
-            <input
-              type="number"
-              value={form.price}
-              onChange={e => update('price', e.target.value)}
-              placeholder="0"
-              className={`${inputCls} text-lg font-bold`}
-            />
+        {/* ── Step 4: Condition ──────────────────────────────────────────── */}
+        {step === 4 && (
+          <div className="space-y-2.5">
+            {CONDITIONS.map(c => (
+              <RadioCard
+                key={c.value}
+                label={c.label}
+                sub={c.sub}
+                selected={form.condition === c.value}
+                onClick={() => { update('condition', c.value); setTimeout(handleNext, 300); }}
+              />
+            ))}
           </div>
+        )}
 
-          {/* Description */}
-          <div className="space-y-1.5">
-            <label className="text-xs text-muted-foreground font-medium">Description</label>
-            <textarea
-              value={form.description}
-              onChange={e => update('description', e.target.value)}
-              placeholder="Describe your shoe — condition, colour, any defects..."
-              rows={3}
-              className="w-full rounded-xl bg-card border border-border/40 text-sm text-foreground px-3 py-2.5 outline-none focus:border-accent/50 transition-colors placeholder:text-muted-foreground resize-none"
-            />
+        {/* ── Step 5: Price & Description ────────────────────────────────── */}
+        {step === 5 && (
+          <div className="space-y-3">
+            <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
+              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Price (USD)</p>
+              <div className="flex items-center gap-2">
+                <span className="text-[22px] font-bold text-black/20">$</span>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  value={form.price}
+                  onChange={e => update('price', e.target.value)}
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01"
+                  className="flex-1 bg-transparent text-foreground text-[22px] font-bold outline-none placeholder-black/15 leading-snug"
+                />
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
+              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Description <span className="normal-case font-normal">(optional)</span></p>
+              <textarea
+                value={form.description}
+                onChange={e => update('description', e.target.value)}
+                placeholder="Colour, any defects, reason for selling…"
+                rows={3}
+                maxLength={500}
+                className="w-full bg-transparent text-foreground text-[15px] outline-none placeholder-black/20 resize-none leading-relaxed"
+              />
+              <p className="text-[10px] text-black/20 text-right mt-1">{form.description.length}/500</p>
+            </div>
           </div>
+        )}
 
-          {error && (
-            <p className="text-xs text-destructive bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-2.5">
-              {error}
-            </p>
-          )}
-
-          <Button
-            type="submit"
-            variant="hero"
-            disabled={submitting}
-            className="w-full rounded-xl text-base shadow-elevated hover:shadow-glow transition-shadow"
-            style={{ height: 52 }}
-          >
-            {submitting ? 'Listing...' : 'List Shoe'}
-          </Button>
-        </form>
+        {error && (
+          <div className="mt-6 px-4 py-3 rounded-2xl bg-red-50 border border-red-100">
+            <p className="text-[13px] text-red-600">{error}</p>
+          </div>
+        )}
       </div>
+
+      {/* Continue button */}
+      {step !== 4 && (
+        <div className="flex-shrink-0 px-6 pb-12 pt-3 bg-background">
+          <button
+            onClick={handleNext}
+            disabled={!canProceed || submitting}
+            className="w-full h-[54px] rounded-full bg-foreground text-background text-[15px] font-semibold disabled:opacity-25 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+          >
+            {submitting ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Listing shoe…
+              </>
+            ) : step === TOTAL_STEPS ? (
+              'List shoe'
+            ) : step === 1 && !photoPreview ? (
+              'Skip for now'
+            ) : (
+              <>Continue <ChevronRight className="w-4 h-4" /></>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
