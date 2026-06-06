@@ -4,7 +4,13 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../../lib/supabase';
 import { ChevronLeft, ChevronRight, Camera, Check } from 'lucide-react';
-import { getSizes, formatSizeLabel } from '../../../lib/sizeConversion';
+import {
+  type SizeSystem,
+  getSizes,
+  formatSizeLabel,
+  toUKCanonical,
+  detectSizeSystem,
+} from '../../../lib/sizeConversion';
 
 type Foot = 'L' | 'R' | 'single';
 type Condition = 'new_with_tags' | 'new_without_tags' | 'excellent' | 'good' | 'fair' | 'poor';
@@ -60,6 +66,7 @@ export default function CreatePage() {
   const [userId,       setUserId]       = useState<string | null>(null);
   const [step,         setStep]         = useState(1);
   const [submitting,   setSubmitting]   = useState(false);
+  const [sizeSystem,   setSizeSystem]   = useState<SizeSystem>('UK');
   const [error,        setError]        = useState('');
   const [photoFile,    setPhotoFile]    = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -72,6 +79,7 @@ export default function CreatePage() {
   });
 
   useEffect(() => {
+    setSizeSystem(detectSizeSystem());
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session?.user) { router.replace('/login'); return; }
       setUserId(session.user.id);
@@ -134,7 +142,7 @@ export default function CreatePage() {
         }
       }
 
-      const ukSize = parseFloat(form.size);
+      const ukSize = toUKCanonical(form.size, sizeSystem);
 
       const { error: insertErr } = await supabase.from('listings').insert({
         user_id:     userId,
@@ -259,17 +267,35 @@ export default function CreatePage() {
         {/* ── Step 3: Size & Side ────────────────────────────────────────── */}
         {step === 3 && (
           <div className="space-y-4">
-            {/* Size picker — UK only */}
+            {/* Size system toggle */}
+            <div className="flex gap-2">
+              {(['UK', 'US', 'EU'] as SizeSystem[]).map(sys => (
+                <button
+                  key={sys}
+                  type="button"
+                  onClick={() => { setSizeSystem(sys); update('size', ''); }}
+                  className={`flex-1 h-11 rounded-full text-[15px] font-semibold border-2 transition-all ${
+                    sizeSystem === sys
+                      ? 'bg-foreground text-background border-foreground'
+                      : 'bg-white text-foreground border-black/10'
+                  }`}
+                >
+                  {sys}
+                </button>
+              ))}
+            </div>
+
+            {/* Size picker for selected system */}
             <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
-              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">UK shoe size</p>
+              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">{sizeSystem} size</p>
               <select
                 value={form.size}
                 onChange={e => update('size', e.target.value)}
                 className="w-full bg-transparent text-foreground text-[17px] outline-none appearance-none leading-snug"
               >
                 <option value="">Select size</option>
-                {getSizes('UK').map(s => (
-                  <option key={s} value={s}>{formatSizeLabel(s, 'UK')}</option>
+                {getSizes(sizeSystem).map(s => (
+                  <option key={s} value={s}>{formatSizeLabel(s, sizeSystem)}</option>
                 ))}
               </select>
             </div>
