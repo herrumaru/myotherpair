@@ -197,7 +197,7 @@ export default function CreatePage() {
       </div>
 
       {/* Scrollable content */}
-      <div className="flex-1 px-6 pt-4 pb-6 overflow-y-auto">
+      <div className="flex-1 px-6 pt-4 pb-8 overflow-y-auto">
         <h1 className="font-display text-[2.6rem] font-bold text-foreground leading-[1.1] tracking-[-0.025em] text-center mb-3">
           {title}
         </h1>
@@ -374,7 +374,7 @@ export default function CreatePage() {
 
       {/* Continue button */}
       {step !== 4 && (
-        <div className="flex-shrink-0 px-6 pb-12 pt-3 bg-background">
+        <div className="flex-shrink-0 px-6 pt-3 pb-[calc(60px+env(safe-area-inset-bottom)+12px)] bg-background">
           <button
             onClick={handleNext}
             disabled={!canProceed || submitting}
