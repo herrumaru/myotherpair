@@ -101,7 +101,7 @@ export default function LoginPage() {
           <div className="bg-card rounded-2xl border border-border px-5 py-4">
             <div className="flex items-center justify-between mb-1.5">
               <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">Password</p>
-              <button type="button" className="text-[12px] text-foreground font-semibold">Forgot?</button>
+              <a href="/forgot-password" className="text-[12px] text-foreground font-semibold">Forgot?</a>
             </div>
             <div className="flex items-center gap-2">
               <input
