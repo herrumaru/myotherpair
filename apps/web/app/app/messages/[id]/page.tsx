@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { supabase } from '../../../../lib/supabase';
 import { ArrowLeft, Send } from 'lucide-react';
 import { formatSizeLabel } from '../../../../lib/sizeConversion';
+import { getCurrencySymbol } from '../../../../lib/currency';
 
 interface Message {
   id: string;
@@ -18,9 +19,13 @@ interface Message {
 interface MatchInfo {
   otherUserName: string;
   otherUserAvatar: string | null;
+  listingId: string | null;
   listingBrand: string;
   listingModel: string;
   listingSize: string;
+  listingPrice: number | null;
+  listingCurrency: string;
+  listingPhoto: string | null;
 }
 
 export default function MessageThreadPage() {
@@ -59,19 +64,24 @@ export default function MessageThreadPage() {
       const [profileRes, listingRes] = await Promise.all([
         supabase.from('users').select('name, avatar_url').eq('id', otherId).single(),
         listingId
-          ? supabase.from('listings').select('shoe_brand, shoe_model, size').eq('id', listingId).single()
+          ? supabase.from('listings').select('shoe_brand, shoe_model, size, price, currency, photos').eq('id', listingId).single()
           : Promise.resolve({ data: null }),
       ]);
 
-      const profile = profileRes.data as Record<string, string> | null;
-      const listing = listingRes.data as Record<string, string | number> | null;
+      const profile = profileRes.data as Record<string, unknown> | null;
+      const listing = listingRes.data as Record<string, unknown> | null;
+      const photos  = Array.isArray(listing?.photos) ? (listing!.photos as string[]) : [];
 
       setMatchInfo({
-        otherUserName:   profile?.name ?? 'User',
+        otherUserName:   (profile?.name as string) ?? 'User',
         otherUserAvatar: (profile?.avatar_url as string | null) ?? null,
+        listingId:       listingId ?? null,
         listingBrand:    (listing?.shoe_brand as string) ?? '',
         listingModel:    (listing?.shoe_model as string) ?? '',
         listingSize:     listing?.size != null ? String(listing.size) : '',
+        listingPrice:    (listing?.price as number | null) ?? null,
+        listingCurrency: (listing?.currency as string) ?? 'USD',
+        listingPhoto:    photos[0] ?? null,
       });
     })();
   }, [userId, matchId]);
@@ -170,7 +180,7 @@ export default function MessageThreadPage() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-background">
+    <div className="h-dvh flex flex-col bg-background">
       {/* Header */}
       <header className="bg-background border-b border-border px-4 py-3 flex items-center gap-3 flex-shrink-0">
         <Link href="/app/messages" className="text-muted-foreground hover:text-foreground transition-colors">
@@ -198,6 +208,31 @@ export default function MessageThreadPage() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {/* Listing context card */}
+        {matchInfo && (matchInfo.listingBrand || matchInfo.listingModel) && (
+          <Link
+            href={matchInfo.listingId ? `/app/listing/${matchInfo.listingId}` : '#'}
+            className="flex items-center gap-3 bg-card border border-border rounded-2xl p-3 mb-2"
+          >
+            {matchInfo.listingPhoto ? (
+              <img src={matchInfo.listingPhoto} alt="" className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
+            ) : (
+              <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center text-2xl flex-shrink-0">👟</div>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-0.5">Listing</p>
+              <p className="text-[13px] font-semibold text-foreground truncate">{matchInfo.listingBrand} {matchInfo.listingModel}</p>
+              {matchInfo.listingSize && (
+                <p className="text-[12px] text-muted-foreground">{formatSizeLabel(matchInfo.listingSize, 'UK')}</p>
+              )}
+            </div>
+            {matchInfo.listingPrice != null && (
+              <p className="text-[16px] font-bold text-foreground flex-shrink-0">
+                {getCurrencySymbol(matchInfo.listingCurrency)}{matchInfo.listingPrice}
+              </p>
+            )}
+          </Link>
+        )}
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <div className="w-6 h-6 rounded-full border-2 border-accent border-t-transparent animate-spin" />

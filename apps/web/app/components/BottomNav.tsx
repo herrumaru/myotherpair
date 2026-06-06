@@ -15,6 +15,9 @@ const TABS = [
 export default function BottomNav() {
   const pathname = usePathname();
 
+  // Hide on individual message threads — chat has its own full-screen layout
+  if (/^\/app\/messages\/.+/.test(pathname)) return null;
+
   function isActive(to: string) {
     if (to === '/app/browse') return pathname === '/app/browse' || pathname === '/app';
     return pathname.startsWith(to);
