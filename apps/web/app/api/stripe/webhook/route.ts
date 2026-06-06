@@ -13,9 +13,6 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY ?? '',
 );
 
-// Next.js requires raw body for Stripe signature verification
-export const dynamic = 'force-dynamic';
-
 export async function POST(req: NextRequest) {
   const sig = req.headers.get('stripe-signature');
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
