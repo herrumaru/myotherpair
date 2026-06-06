@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef, type KeyboardEvent } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback, type KeyboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import { ChevronLeft, ChevronRight, Eye, EyeOff, Check } from 'lucide-react';
@@ -45,6 +45,7 @@ function PasswordStrengthBar({ password }: { password: string }) {
 interface FormState {
   firstName:      string;
   lastName:       string;
+  username:       string;
   email:          string;
   password:       string;
   countryCode:    string;
@@ -56,6 +57,8 @@ interface FormState {
   amputeeSide:    '' | 'left' | 'right';
   neededFootSize: string;
 }
+
+type UsernameStatus = 'idle' | 'checking' | 'available' | 'taken' | 'invalid';
 
 type FootType = 'different' | 'amputee' | null;
 
@@ -206,20 +209,21 @@ function CityAutocomplete({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 7;
 
 export default function SignupPage() {
   const router = useRouter();
 
-  const [step,      setStep]      = useState(1);
-  const [loading,   setLoading]   = useState(false);
-  const [error,     setError]     = useState('');
-  const [showPass,  setShowPass]  = useState(false);
-  const [footType,  setFootType]  = useState<FootType>(null);
+  const [step,            setStep]           = useState(1);
+  const [loading,         setLoading]        = useState(false);
+  const [error,           setError]          = useState('');
+  const [showPass,        setShowPass]       = useState(false);
+  const [footType,        setFootType]       = useState<FootType>(null);
+  const [usernameStatus,  setUsernameStatus] = useState<UsernameStatus>('idle');
   const firstInputRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState<FormState>({
-    firstName: '', lastName: '', email: '', password: '',
+    firstName: '', lastName: '', username: '', email: '', password: '',
     countryCode: '', city: '',
     sizeSystem: 'UK',
     leftFootSize: '', rightFootSize: '',
@@ -244,6 +248,23 @@ export default function SignupPage() {
     return City.getCitiesOfCountry(form.countryCode) ?? [];
   }, [form.countryCode]);
 
+  const checkUsername = useCallback(async (value: string) => {
+    const clean = value.trim().toLowerCase();
+    if (!clean) { setUsernameStatus('idle'); return; }
+    if (clean.length < 3 || clean.length > 30 || !/^[a-z0-9_]+$/.test(clean)) {
+      setUsernameStatus('invalid'); return;
+    }
+    setUsernameStatus('checking');
+    const { data } = await supabase.from('users').select('id').ilike('username', clean).limit(1);
+    setUsernameStatus(data && data.length > 0 ? 'taken' : 'available');
+  }, []);
+
+  useEffect(() => {
+    if (step !== 2) return;
+    const timer = setTimeout(() => checkUsername(form.username), 400);
+    return () => clearTimeout(timer);
+  }, [form.username, step, checkUsername]);
+
   const strength = useMemo(() => getPasswordStrength(form.password), [form.password]);
 
   const update = (key: keyof FormState, value: string | boolean) =>
@@ -258,17 +279,18 @@ export default function SignupPage() {
   const canProceed = useMemo(() => {
     switch (step) {
       case 1: return form.firstName.trim().length > 0;
-      case 2: return /\S+@\S+\.\S+/.test(form.email);
-      case 3: return strength.score >= 2;
-      case 4: return !!form.countryCode && form.city.trim().length > 0;
-      case 5: return footType !== null;
-      case 6: {
+      case 2: return usernameStatus === 'available';
+      case 3: return /\S+@\S+\.\S+/.test(form.email);
+      case 4: return strength.score >= 2;
+      case 5: return !!form.countryCode && form.city.trim().length > 0;
+      case 6: return footType !== null;
+      case 7: {
         if (footType === 'amputee') return !!form.amputeeSide && !!form.neededFootSize;
         return !!form.leftFootSize && !!form.rightFootSize;
       }
       default: return false;
     }
-  }, [step, form, footType, strength]);
+  }, [step, form, footType, strength, usernameStatus]);
 
   function handleBack() {
     setError('');
@@ -315,6 +337,7 @@ export default function SignupPage() {
 
     const profilePayload = {
       name:            fullName,
+      username:        form.username || null,
       location:        locationStr,
       foot_size_left:  leftUK,
       foot_size_right: rightUK,
@@ -336,11 +359,12 @@ export default function SignupPage() {
 
   const stepConfig: Record<number, { title: string; subtitle: string }> = {
     1: { title: "What's your name?",      subtitle: "This is how you'll appear on myotherpair." },
-    2: { title: "What's your email?",     subtitle: "Used for your account and verification." },
-    3: { title: "Create a password",      subtitle: "At least 8 characters with a mix of letters and numbers." },
-    4: { title: "Where are you based?",   subtitle: "We'll show you listings near you." },
-    5: { title: "Tell us about your feet", subtitle: "This helps us find you the perfect match." },
-    6: {
+    2: { title: "Choose a username",       subtitle: "Your unique @handle. You can always change it later." },
+    3: { title: "What's your email?",     subtitle: "Used for your account and verification." },
+    4: { title: "Create a password",      subtitle: "At least 8 characters with a mix of letters and numbers." },
+    5: { title: "Where are you based?",   subtitle: "We'll show you listings near you." },
+    6: { title: "Tell us about your feet", subtitle: "This helps us find you the perfect match." },
+    7: {
       title: footType === 'amputee' ? "Which foot do you need?" : "What are your foot sizes?",
       subtitle: footType === 'amputee'
         ? "We'll find single shoes in your size."
@@ -407,8 +431,56 @@ export default function SignupPage() {
           </div>
         )}
 
-        {/* ── Step 2: Email ───────────────────────────────────────────────── */}
+        {/* ── Step 2: Username ────────────────────────────────────────────── */}
         {step === 2 && (
+          <div className="space-y-3">
+            <div className={`bg-white rounded-2xl border-2 px-5 py-4 transition-all ${
+              usernameStatus === 'taken'   ? 'border-red-300'   :
+              usernameStatus === 'invalid' ? 'border-amber-300' :
+              usernameStatus === 'available' ? 'border-green-400' :
+              'border-black/10'
+            }`}>
+              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Username</p>
+              <div className="flex items-center gap-1">
+                <span className="text-[17px] text-black/25 font-medium select-none">@</span>
+                <input
+                  ref={firstInputRef}
+                  type="text"
+                  value={form.username}
+                  onChange={e => {
+                    const v = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+                    update('username', v);
+                    setUsernameStatus('idle');
+                  }}
+                  onKeyDown={e => e.key === 'Enter' && canProceed && handleNext()}
+                  placeholder="your_username"
+                  maxLength={30}
+                  autoComplete="username"
+                  className="flex-1 bg-transparent text-foreground text-[17px] outline-none placeholder-black/20 leading-snug"
+                />
+                {usernameStatus === 'checking' && (
+                  <svg className="w-4 h-4 animate-spin text-black/30 flex-shrink-0" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                )}
+                {usernameStatus === 'available' && <Check className="w-4 h-4 text-green-500 flex-shrink-0" />}
+              </div>
+            </div>
+            {usernameStatus === 'taken' && (
+              <p className="text-[12px] text-red-500 px-1">@{form.username} is already taken. Try another.</p>
+            )}
+            {usernameStatus === 'invalid' && (
+              <p className="text-[12px] text-amber-600 px-1">3–30 characters. Letters, numbers, and underscores only.</p>
+            )}
+            {usernameStatus === 'available' && (
+              <p className="text-[12px] text-green-600 px-1">@{form.username} is available!</p>
+            )}
+          </div>
+        )}
+
+        {/* ── Step 3: Email ───────────────────────────────────────────────── */}
+        {step === 3 && (
           <div className="space-y-3">
             <div className={`bg-white rounded-2xl border-2 px-5 py-4 transition-all ${
               form.email && !/\S+@\S+\.\S+/.test(form.email)
@@ -435,8 +507,8 @@ export default function SignupPage() {
           </div>
         )}
 
-        {/* ── Step 3: Password ────────────────────────────────────────────── */}
-        {step === 3 && (
+        {/* ── Step 4: Password ────────────────────────────────────────────── */}
+        {step === 4 && (
           <div className="space-y-3">
             <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
               <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Password</p>
@@ -460,8 +532,8 @@ export default function SignupPage() {
           </div>
         )}
 
-        {/* ── Step 4: Location ────────────────────────────────────────────── */}
-        {step === 4 && (
+        {/* ── Step 5: Location ────────────────────────────────────────────── */}
+        {step === 5 && (
           <div className="space-y-3">
             <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
               <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Country</p>
@@ -485,8 +557,8 @@ export default function SignupPage() {
           </div>
         )}
 
-        {/* ── Step 5: Foot type ───────────────────────────────────────────── */}
-        {step === 5 && (
+        {/* ── Step 6: Foot type ───────────────────────────────────────────── */}
+        {step === 6 && (
           <div className="space-y-3">
             <RadioCard
               label="My feet are different sizes"
@@ -503,8 +575,8 @@ export default function SignupPage() {
           </div>
         )}
 
-        {/* ── Step 6: Sizes ───────────────────────────────────────────────── */}
-        {step === 6 && (
+        {/* ── Step 7: Sizes ───────────────────────────────────────────────── */}
+        {step === 7 && (
           <div className="space-y-4">
             <div className="flex gap-2">
               {(['UK', 'US', 'EU'] as SizeSystem[]).map(sys => (
@@ -563,7 +635,7 @@ export default function SignupPage() {
 
       {/* Sticky continue button */}
       <div className="flex-shrink-0 px-6 pb-12 pt-3 bg-background">
-        {step !== 5 && (
+        {step !== 6 && (
           <button
             onClick={handleNext}
             disabled={!canProceed || loading}
