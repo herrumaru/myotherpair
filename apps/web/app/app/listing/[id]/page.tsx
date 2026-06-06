@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '../../../../lib/supabase';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
@@ -37,10 +37,9 @@ const CONDITION_LABELS: Record<string, string> = {
   good: 'Good', fair: 'Fair', poor: 'Poor',
 };
 
-interface PageProps { params: { id: string } }
-
-export default function ListingDetailPage({ params }: PageProps) {
+export default function ListingDetailPage() {
   const router    = useRouter();
+  const params    = useParams<{ id: string }>();
   const listingId = params.id;
 
   const [userId,        setUserId]        = useState<string | null>(null);
