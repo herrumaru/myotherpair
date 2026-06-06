@@ -100,7 +100,7 @@ export default function CreatePage() {
 
   const canProceed = (() => {
     switch (step) {
-      case 1: return true; // photo optional
+      case 1: return !!photoPreview;
       case 2: return !!form.brand && form.model.trim().length > 0;
       case 3: return !!form.size && !!form.side;
       case 4: return !!form.condition;
@@ -234,7 +234,7 @@ export default function CreatePage() {
             </button>
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
             {!photoPreview && (
-              <p className="text-center text-[13px] text-black/30">You can skip this and add a photo later</p>
+              <p className="text-center text-[13px] text-black/30">A photo is required to list your shoe</p>
             )}
           </div>
         )}
@@ -390,8 +390,6 @@ export default function CreatePage() {
               </>
             ) : step === TOTAL_STEPS ? (
               'List shoe'
-            ) : step === 1 && !photoPreview ? (
-              'Skip for now'
             ) : (
               <>Continue <ChevronRight className="w-4 h-4" /></>
             )}
