@@ -39,16 +39,28 @@ export function getSizes(system: SizeSystem): string[] {
   return SIZE_TABLE.map(row => String(row[key]));
 }
 
-/** Find a row by value + system. */
+/** Find a row by exact value + system, falling back to nearest-neighbor. */
 function findRow(value: string, system: SizeSystem): SizeRow | undefined {
   const key = system.toLowerCase() as 'uk' | 'us' | 'eu';
   const num = parseFloat(value);
-  return SIZE_TABLE.find(r => r[key] === num);
+  if (isNaN(num)) return undefined;
+
+  const exact = SIZE_TABLE.find(r => r[key] === num);
+  if (exact) return exact;
+
+  // Nearest-neighbor — never show '—' for a valid number
+  let nearest: SizeRow | undefined;
+  let minDiff = Infinity;
+  for (const r of SIZE_TABLE) {
+    const diff = Math.abs(r[key] - num);
+    if (diff < minDiff) { minDiff = diff; nearest = r; }
+  }
+  return nearest;
 }
 
 /**
  * Returns the equivalent sizes in all three systems for a given value+system.
- * Returns null if the size isn't in the table.
+ * Uses nearest-neighbor when exact match is not found — never returns null for a valid number.
  */
 export function getEquivalents(
   value: string,
