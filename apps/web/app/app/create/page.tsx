@@ -29,7 +29,7 @@ const CONDITIONS: { value: Condition; label: string; sub: string }[] = [
 const SIDES: { value: Foot; label: string; sub: string }[] = [
   { value: 'L',      label: 'Left foot',  sub: 'Single left shoe only' },
   { value: 'R',      label: 'Right foot', sub: 'Single right shoe only' },
-  { value: 'single', label: 'Either',     sub: 'Fits both or selling as single' },
+  { value: 'single', label: 'No specific side', sub: 'Symmetrical shoe — no left or right' },
 ];
 
 const TOTAL_STEPS = 5;
