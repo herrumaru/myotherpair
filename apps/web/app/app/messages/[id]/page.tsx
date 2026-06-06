@@ -32,6 +32,7 @@ export default function MessageThreadPage() {
   const params  = useParams<{ id: string }>();
   const matchId = params.id;
   const [userId,    setUserId]    = useState<string | null>(null);
+  const [isUser1,   setIsUser1]   = useState<boolean | null>(null);
   const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
   const [messages,  setMessages]  = useState<Message[]>([]);
   const [newMsg,    setNewMsg]    = useState('');
@@ -56,10 +57,11 @@ export default function MessageThreadPage() {
         .single();
 
       if (!data) return;
-      const r       = data as { id: string; user_id_1: string; user_id_2: string; listing_id_1: string; listing_id_2: string };
-      const isUser1 = r.user_id_1 === userId;
-      const otherId = isUser1 ? r.user_id_2 : r.user_id_1;
-      const listingId = isUser1 ? r.listing_id_2 : r.listing_id_1;
+      const r         = data as { id: string; user_id_1: string; user_id_2: string; listing_id_1: string; listing_id_2: string };
+      const isUser1Val = r.user_id_1 === userId;
+      setIsUser1(isUser1Val);
+      const otherId = isUser1Val ? r.user_id_2 : r.user_id_1;
+      const listingId = isUser1Val ? r.listing_id_2 : r.listing_id_1;
 
       const [profileRes, listingRes] = await Promise.all([
         supabase.from('users').select('name, avatar_url').eq('id', otherId).single(),
@@ -85,6 +87,13 @@ export default function MessageThreadPage() {
       });
     })();
   }, [userId, matchId]);
+
+  // Mark conversation as read when opened
+  useEffect(() => {
+    if (!userId || !matchId || isUser1 === null) return;
+    const col = isUser1 ? 'user1_last_read_at' : 'user2_last_read_at';
+    supabase.from('matches').update({ [col]: new Date().toISOString() }).eq('id', matchId);
+  }, [userId, matchId, isUser1]);
 
   // Load messages
   useEffect(() => {
