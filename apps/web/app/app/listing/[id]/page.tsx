@@ -258,8 +258,11 @@ export default function ListingDetailPage() {
     try {
       const id = await ensureMatch();
       if (!id) throw new Error('No match');
-      const sym     = getCurrencySymbol(listing.currency || 'USD');
-      const content = `Hi! I'd like to offer ${sym}${offerPrice} for your ${listing.shoe_brand} ${listing.shoe_model}. Would you accept that?`;
+      const content = JSON.stringify({
+        type: 'offer',
+        amount: parseFloat(offerPrice),
+        currency: listing.currency || 'USD',
+      });
       const { error } = await supabase.from('messages').insert({
         match_id:  id,
         sender_id: userId,
@@ -618,13 +621,13 @@ export default function ListingDetailPage() {
       {/* ── Make an offer sheet ──────────────────────────────────── */}
       {offerOpen && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop — above BottomNav (z-50) */}
           <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60]"
             onClick={() => setOfferOpen(false)}
           />
           {/* Sheet */}
-          <div className="fixed bottom-0 left-0 right-0 z-50 max-w-lg mx-auto bg-background rounded-t-[28px] px-6 pt-5 pb-[calc(env(safe-area-inset-bottom)+24px)] shadow-2xl">
+          <div className="fixed bottom-0 left-0 right-0 z-[70] max-w-lg mx-auto bg-background rounded-t-[28px] px-6 pt-5 pb-[calc(env(safe-area-inset-bottom)+28px)] shadow-2xl">
             {/* Handle */}
             <div className="w-10 h-1 bg-muted-foreground/20 rounded-full mx-auto mb-5" />
 

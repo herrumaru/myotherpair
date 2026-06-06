@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { supabase } from '../../../../lib/supabase';
-import { ArrowLeft, Send } from 'lucide-react';
+import { ArrowLeft, Send, Check, X, RefreshCw } from 'lucide-react';
 import { formatSizeLabel } from '../../../../lib/sizeConversion';
 import { getCurrencySymbol } from '../../../../lib/currency';
 
@@ -28,16 +28,33 @@ interface MatchInfo {
   listingPhoto: string | null;
 }
 
+interface OfferPayload {
+  type: 'offer';
+  amount: number;
+  currency: string;
+}
+
+function parseOffer(text: string): OfferPayload | null {
+  try {
+    const p = JSON.parse(text);
+    if (p.type === 'offer' && typeof p.amount === 'number') return p as OfferPayload;
+  } catch {}
+  return null;
+}
+
 export default function MessageThreadPage() {
   const params  = useParams<{ id: string }>();
   const matchId = params.id;
-  const [userId,    setUserId]    = useState<string | null>(null);
-  const [isUser1,   setIsUser1]   = useState<boolean | null>(null);
-  const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
-  const [messages,  setMessages]  = useState<Message[]>([]);
-  const [newMsg,    setNewMsg]    = useState('');
-  const [sending,   setSending]   = useState(false);
-  const [loading,   setLoading]   = useState(true);
+  const [userId,        setUserId]        = useState<string | null>(null);
+  const [isUser1,       setIsUser1]       = useState<boolean | null>(null);
+  const [matchInfo,     setMatchInfo]     = useState<MatchInfo | null>(null);
+  const [messages,      setMessages]      = useState<Message[]>([]);
+  const [newMsg,        setNewMsg]        = useState('');
+  const [sending,       setSending]       = useState(false);
+  const [loading,       setLoading]       = useState(true);
+  // Counter offer state: keyed by message id
+  const [counterInputs, setCounterInputs] = useState<Record<string, string>>({});
+  const [showCounter,   setShowCounter]   = useState<Record<string, boolean>>({});
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -46,7 +63,7 @@ export default function MessageThreadPage() {
     });
   }, []);
 
-  // Load match info using separate queries (no FK constraint dependency)
+  // Load match info
   useEffect(() => {
     if (!userId || !matchId) return;
     (async () => {
@@ -57,10 +74,10 @@ export default function MessageThreadPage() {
         .single();
 
       if (!data) return;
-      const r         = data as { id: string; user_id_1: string; user_id_2: string; listing_id_1: string; listing_id_2: string };
+      const r          = data as { id: string; user_id_1: string; user_id_2: string; listing_id_1: string; listing_id_2: string };
       const isUser1Val = r.user_id_1 === userId;
       setIsUser1(isUser1Val);
-      const otherId = isUser1Val ? r.user_id_2 : r.user_id_1;
+      const otherId   = isUser1Val ? r.user_id_2 : r.user_id_1;
       const listingId = isUser1Val ? r.listing_id_2 : r.listing_id_1;
 
       const [profileRes, listingRes] = await Promise.all([
@@ -120,7 +137,7 @@ export default function MessageThreadPage() {
     })();
   }, [userId, matchId]);
 
-  // Real-time subscription — dedup by ID to prevent double-adding sent messages
+  // Real-time subscription
   useEffect(() => {
     if (!userId || !matchId) return;
     const channel = supabase
@@ -131,7 +148,6 @@ export default function MessageThreadPage() {
       }, payload => {
         const m = payload.new as { id: string; sender_id: string; content: string; created_at: string };
         setMessages(prev => {
-          // Skip if already present (covers optimistic messages that got their ID replaced)
           if (prev.some(msg => msg.id === m.id)) return prev;
           return [...prev, {
             id:        m.id,
@@ -155,37 +171,145 @@ export default function MessageThreadPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const sendMessage = async () => {
-    if (!newMsg.trim() || !userId || !matchId || sending) return;
-    const text = newMsg.trim().slice(0, 2000);
-    setNewMsg('');
-    setSending(true);
-
-    // Optimistic update with temp ID
+  // Core send — used by both the input field and offer action buttons
+  const sendContent = async (text: string) => {
+    if (!userId || !matchId) return;
     const tempId = `opt-${Date.now()}`;
-    const optimistic: Message = {
-      id:        tempId,
-      from:      'me',
-      text,
+    setMessages(prev => [...prev, {
+      id: tempId, from: 'me', text,
       time:      new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       timestamp: new Date().toISOString(),
-    };
-    setMessages(prev => [...prev, optimistic]);
-
-    // Insert and replace temp ID with real ID
+    }]);
     const { data: inserted } = await supabase
       .from('messages')
       .insert({ match_id: matchId, sender_id: userId, content: text })
-      .select('id')
-      .single();
-
+      .select('id').single();
     if (inserted) {
       const realId = (inserted as { id: string }).id;
-      // Replace optimistic entry with real ID so realtime dedup works
       setMessages(prev => prev.map(m => m.id === tempId ? { ...m, id: realId } : m));
     }
+  };
 
+  const sendMessage = async () => {
+    if (!newMsg.trim() || sending) return;
+    const text = newMsg.trim().slice(0, 2000);
+    setNewMsg('');
+    setSending(true);
+    await sendContent(text);
     setSending(false);
+  };
+
+  const handleAccept = (offer: OfferPayload) => {
+    const sym = getCurrencySymbol(offer.currency);
+    sendContent(`✅ I accept your offer of ${sym}${offer.amount}! Let's proceed.`);
+  };
+
+  const handleDecline = (offer: OfferPayload) => {
+    const sym = getCurrencySymbol(offer.currency);
+    sendContent(`Sorry, I can't accept the ${sym}${offer.amount} offer.`);
+  };
+
+  const handleCounter = (msgId: string, offer: OfferPayload) => {
+    const amount = parseFloat(counterInputs[msgId] ?? '');
+    if (!amount || amount <= 0) return;
+    sendContent(JSON.stringify({ type: 'offer', amount, currency: offer.currency }));
+    setShowCounter(p => ({ ...p, [msgId]: false }));
+    setCounterInputs(p => ({ ...p, [msgId]: '' }));
+  };
+
+  // ── Render offer bubble ────────────────────────────────────────────────────
+  const renderOffer = (msg: Message, offer: OfferPayload) => {
+    const isMine   = msg.from === 'me';
+    const sym      = getCurrencySymbol(offer.currency);
+    const isCountering = showCounter[msg.id];
+
+    return (
+      <div className="flex justify-center px-2">
+        <div className="w-full max-w-[85%] bg-card border border-border rounded-2xl overflow-hidden shadow-sm">
+          {/* Header */}
+          <div className="px-4 pt-4 pb-3 border-b border-border/50">
+            <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mb-1">
+              {isMine ? 'Your offer' : `Offer from ${matchInfo?.otherUserName ?? 'them'}`}
+            </p>
+            <p className="text-[32px] font-bold text-foreground leading-none">
+              {sym}{offer.amount}
+            </p>
+            {matchInfo?.listingPrice != null && (
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Asking {sym}{matchInfo.listingPrice}
+                {' '}·{' '}
+                {Math.round((1 - offer.amount / matchInfo.listingPrice) * 100)}% below
+              </p>
+            )}
+          </div>
+
+          {/* Actions — only shown to the recipient */}
+          {!isMine && (
+            isCountering ? (
+              <div className="px-4 py-3 space-y-2">
+                <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">Counter offer ({offer.currency})</p>
+                <div className="flex items-center gap-2 bg-muted/40 rounded-xl px-3 py-2">
+                  <span className="text-[20px] font-bold text-muted-foreground/50">{sym}</span>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    min="1"
+                    step="1"
+                    autoFocus
+                    value={counterInputs[msg.id] ?? ''}
+                    onChange={e => setCounterInputs(p => ({ ...p, [msg.id]: e.target.value }))}
+                    placeholder="0"
+                    className="flex-1 bg-transparent text-foreground text-[20px] font-bold outline-none placeholder:text-muted-foreground/30"
+                  />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    onClick={() => setShowCounter(p => ({ ...p, [msg.id]: false }))}
+                    className="flex-1 h-10 rounded-xl border border-border text-foreground text-[13px] font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => handleCounter(msg.id, offer)}
+                    disabled={!counterInputs[msg.id] || parseFloat(counterInputs[msg.id] ?? '0') <= 0}
+                    className="flex-1 h-10 rounded-xl bg-foreground text-background text-[13px] font-semibold disabled:opacity-30"
+                  >
+                    Send counter
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex divide-x divide-border">
+                <button
+                  onClick={() => handleDecline(offer)}
+                  className="flex-1 py-3.5 flex items-center justify-center gap-1.5 text-[13px] font-semibold text-destructive active:bg-muted/40 transition-colors"
+                >
+                  <X className="h-3.5 w-3.5" /> Decline
+                </button>
+                <button
+                  onClick={() => setShowCounter(p => ({ ...p, [msg.id]: true }))}
+                  className="flex-1 py-3.5 flex items-center justify-center gap-1.5 text-[13px] font-semibold text-muted-foreground active:bg-muted/40 transition-colors"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" /> Counter
+                </button>
+                <button
+                  onClick={() => handleAccept(offer)}
+                  className="flex-1 py-3.5 flex items-center justify-center gap-1.5 text-[13px] font-semibold text-accent active:bg-muted/40 transition-colors"
+                >
+                  <Check className="h-3.5 w-3.5" /> Accept
+                </button>
+              </div>
+            )
+          )}
+
+          {isMine && (
+            <div className="px-4 py-3">
+              <p className="text-[12px] text-muted-foreground text-center">Waiting for response…</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -242,6 +366,7 @@ export default function MessageThreadPage() {
             )}
           </Link>
         )}
+
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <div className="w-6 h-6 rounded-full border-2 border-accent border-t-transparent animate-spin" />
@@ -257,22 +382,28 @@ export default function MessageThreadPage() {
             const isMine = msg.from === 'me';
             const showTimestamp = i === 0 ||
               new Date(msg.timestamp).getTime() - new Date(messages[i - 1].timestamp).getTime() > 300_000;
+            const offer = parseOffer(msg.text);
+
             return (
               <div key={msg.id}>
                 {showTimestamp && (
                   <p className="text-[10px] text-muted-foreground text-center mb-2">{msg.time}</p>
                 )}
-                <div className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                  <div
-                    className={`max-w-[78%] rounded-2xl px-4 py-2.5 text-sm ${
-                      isMine
-                        ? 'gradient-warm text-accent-foreground rounded-br-md shadow-sm'
-                        : 'bg-muted/60 border border-border/30 text-foreground rounded-bl-md'
-                    }`}
-                  >
-                    <p className="leading-relaxed">{msg.text}</p>
+                {offer ? (
+                  renderOffer(msg, offer)
+                ) : (
+                  <div className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                    <div
+                      className={`max-w-[78%] rounded-2xl px-4 py-2.5 text-sm ${
+                        isMine
+                          ? 'gradient-warm text-accent-foreground rounded-br-md shadow-sm'
+                          : 'bg-muted text-foreground rounded-bl-md'
+                      }`}
+                    >
+                      <p className="leading-relaxed">{msg.text}</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             );
           })
