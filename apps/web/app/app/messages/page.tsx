@@ -97,14 +97,14 @@ export default function MessagesPage() {
   }, [userId]);
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-20 md:pb-8">
       <header className="sticky top-0 z-40 bg-background">
-        <div className="px-5 pt-5 pb-3 max-w-lg mx-auto">
+        <div className="px-5 pt-5 pb-3 max-w-2xl mx-auto">
           <h1 className="text-[28px] font-bold text-foreground leading-none tracking-[-0.02em]">Messages</h1>
         </div>
       </header>
 
-      <div className="max-w-lg mx-auto">
+      <div className="max-w-2xl mx-auto">
         {loading ? (
           <>
             {[0, 1, 2, 3, 4].map(i => (

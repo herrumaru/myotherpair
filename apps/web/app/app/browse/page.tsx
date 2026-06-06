@@ -447,10 +447,10 @@ export default function BrowsePage() {
     (filters.location ? 1 : 0);
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-24 md:pb-8">
       {/* Sticky header + search */}
       <header className="sticky top-0 z-40 bg-background px-4 pb-3">
-        <div className="flex items-end justify-between max-w-lg mx-auto pt-5 pb-1">
+        <div className="flex items-end justify-between max-w-5xl mx-auto pt-5 pb-1">
           <h1 className="text-[28px] font-bold text-foreground leading-none tracking-[-0.02em]">Browse</h1>
           <button
             onClick={() => setShowFilters(v => !v)}
@@ -469,7 +469,7 @@ export default function BrowsePage() {
             )}
           </button>
         </div>
-        <div className="relative max-w-lg mx-auto">
+        <div className="relative max-w-5xl mx-auto">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
           <input
             value={searchQuery}
@@ -488,7 +488,7 @@ export default function BrowsePage() {
         </div>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 py-4">
+      <div className="max-w-5xl mx-auto px-4 py-4">
         {/* Filters panel */}
         {showFilters && (
           <div className="mb-4 animate-fade-in">
@@ -512,7 +512,7 @@ export default function BrowsePage() {
 
         {/* Skeleton */}
         {loading ? (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {[0, 1, 2, 3, 4, 5].map(i => (
               <div key={i} className="rounded-2xl overflow-hidden bg-card border border-border/20">
                 <div className="aspect-square bg-muted animate-pulse" />
@@ -525,7 +525,7 @@ export default function BrowsePage() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
             {filtered.map((listing, i) => (
               <div
                 key={listing.id}

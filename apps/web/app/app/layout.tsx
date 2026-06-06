@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import BottomNav from '../components/BottomNav';
+import SideNav from '../components/SideNav';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -37,7 +38,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background">
-      {children}
+      <SideNav />
+      <div className="md:pl-60">
+        {children}
+      </div>
       <BottomNav />
     </div>
   );

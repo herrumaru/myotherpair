@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Search, Plus, Mail, User } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useUnreadCount } from '../hooks/useUnreadCount';
 
 const TABS = [
   { to: '/app/browse',   Icon: Home,   label: 'Browse'  },
@@ -16,11 +17,11 @@ const TABS = [
 
 export default function BottomNav() {
   const pathname = usePathname();
-  const [userId,  setUserId]  = useState<string | null>(null);
-  const [unread,  setUnread]  = useState(0);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  // Compute hidden state — but hooks must all be called before any early return
+  // Hidden on individual message threads and on desktop (sidebar takes over)
   const hidden = /^\/app\/messages\/.+/.test(pathname);
+  const unread = useUnreadCount(userId, hidden);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -28,48 +29,6 @@ export default function BottomNav() {
     });
   }, []);
 
-  useEffect(() => {
-    if (!userId || hidden) return;
-
-    async function fetchUnread() {
-      const { data: matches } = await supabase
-        .from('matches')
-        .select('id, user_id_1, user_id_2, user1_last_read_at, user2_last_read_at')
-        .or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`);
-
-      if (!matches?.length) { setUnread(0); return; }
-
-      const matchIds = matches.map(m => m.id);
-      const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-
-      const { data: msgs } = await supabase
-        .from('messages')
-        .select('match_id, created_at')
-        .in('match_id', matchIds)
-        .neq('sender_id', userId)
-        .gte('created_at', since);
-
-      if (!msgs) { setUnread(0); return; }
-
-      const matchMap = new Map(matches.map(m => [m.id, m]));
-      const unreadSet = new Set<string>();
-
-      for (const msg of msgs) {
-        const match = matchMap.get(msg.match_id);
-        if (!match) continue;
-        const lastRead = match.user_id_1 === userId ? match.user1_last_read_at : match.user2_last_read_at;
-        if (!lastRead || new Date(msg.created_at) > new Date(lastRead)) {
-          unreadSet.add(msg.match_id);
-        }
-      }
-
-      setUnread(unreadSet.size);
-    }
-
-    fetchUnread();
-  }, [userId, pathname, hidden]);
-
-  // Hide on individual message threads after all hooks have run
   if (hidden) return null;
 
   function isActive(to: string) {
@@ -79,7 +38,7 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="flex items-center max-w-lg mx-auto" style={{ height: 64 }}>
@@ -103,9 +62,7 @@ export default function BottomNav() {
                   </span>
                 )}
               </div>
-              <span
-                className={`text-[10px] font-medium leading-none ${active ? 'text-accent' : 'text-muted-foreground'}`}
-              >
+              <span className={`text-[10px] font-medium leading-none ${active ? 'text-accent' : 'text-muted-foreground'}`}>
                 {label}
               </span>
             </Link>

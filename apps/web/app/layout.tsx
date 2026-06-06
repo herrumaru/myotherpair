@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Playfair_Display, DM_Sans } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
@@ -16,6 +16,15 @@ const dmSans = DM_Sans({
   display:  'swap',
   weight:   ['400', '500', '600', '700'],
 });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f7f7f5' },
+    { media: '(prefers-color-scheme: dark)',  color: '#141210' },
+  ],
+};
 
 export const metadata: Metadata = {
   title: 'MyOtherPair — Find your match.',
