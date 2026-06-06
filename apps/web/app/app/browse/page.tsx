@@ -291,9 +291,9 @@ function FiltersPanel({
         <button
           type="button"
           onClick={() => onChange({ ...filters, swapOnly: !filters.swapOnly })}
-          className={`w-11 h-6 rounded-full transition-colors relative ${filters.swapOnly ? 'bg-teal-500' : 'bg-black/15'}`}
+          className={`w-11 h-6 rounded-full transition-colors relative ${filters.swapOnly ? 'bg-teal-500' : 'bg-muted-foreground/25'}`}
         >
-          <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${filters.swapOnly ? 'left-5' : 'left-0.5'}`} />
+          <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-background shadow transition-all ${filters.swapOnly ? 'left-5' : 'left-0.5'}`} />
         </button>
       </div>
 
@@ -457,7 +457,7 @@ export default function BrowsePage() {
             className={`relative flex items-center gap-1.5 h-9 px-4 rounded-full text-[13px] font-semibold border-2 transition-all ${
               showFilters
                 ? 'bg-foreground text-background border-foreground'
-                : 'bg-transparent text-foreground border-black/15 hover:border-black/30'
+                : 'bg-transparent text-foreground border-border hover:border-border/80'
             }`}
           >
             {showFilters ? <X className="h-3.5 w-3.5" /> : <SlidersHorizontal className="h-3.5 w-3.5" />}
@@ -470,17 +470,17 @@ export default function BrowsePage() {
           </button>
         </div>
         <div className="relative max-w-lg mx-auto">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-black/30" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
           <input
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search brand or model…"
-            className="w-full pl-10 pr-4 h-10 bg-white border border-black/10 rounded-2xl text-[14px] text-foreground placeholder:text-black/25 outline-none focus:border-black/25 transition-colors"
+            className="w-full pl-10 pr-4 h-10 bg-card border border-border rounded-2xl text-[14px] text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-border/80 transition-colors"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-black/25 hover:text-foreground"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground"
             >
               <X className="h-3.5 w-3.5" />
             </button>

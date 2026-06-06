@@ -10,7 +10,7 @@ import { useLocale, LOCALES } from '../../../lib/locale';
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[13px] text-black/40 font-normal px-5 pt-7 pb-2 bg-background">{children}</p>
+    <p className="text-[13px] text-muted-foreground font-normal px-5 pt-7 pb-2 bg-background">{children}</p>
   );
 }
 
@@ -33,17 +33,17 @@ function Row({
 }) {
   const content = (
     <div
-      className={`flex items-center px-5 py-[15px] border-b border-black/[0.07] bg-background active:bg-black/[0.03] transition-colors ${onClick || href ? 'cursor-pointer' : ''}`}
+      className={`flex items-center px-5 py-[15px] border-b border-border bg-background active:bg-muted/30 transition-colors ${onClick || href ? 'cursor-pointer' : ''}`}
       onClick={onClick}
     >
       <div className="flex-1 min-w-0">
         <p className={`text-[15px] leading-snug ${danger ? 'text-red-500' : 'text-foreground'}`}>{label}</p>
-        {sublabel && <p className="text-[13px] text-black/40 mt-0.5 leading-snug">{sublabel}</p>}
+        {sublabel && <p className="text-[13px] text-muted-foreground mt-0.5 leading-snug">{sublabel}</p>}
       </div>
       {right ?? (
         <>
-          {value && <span className="text-[13px] text-black/40 mr-2 flex-shrink-0">{value}</span>}
-          {(href || onClick) && !danger && <ChevronRight className="w-[17px] h-[17px] text-black/25 flex-shrink-0" />}
+          {value && <span className="text-[13px] text-muted-foreground mr-2 flex-shrink-0">{value}</span>}
+          {(href || onClick) && !danger && <ChevronRight className="w-[17px] h-[17px] text-muted-foreground/60 flex-shrink-0" />}
         </>
       )}
     </div>
@@ -55,9 +55,9 @@ function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
   return (
     <button
       onClick={onToggle}
-      className={`w-[51px] h-[31px] rounded-full flex items-center px-[2px] flex-shrink-0 transition-colors duration-200 ${on ? 'bg-foreground' : 'bg-black/20'}`}
+      className={`w-[51px] h-[31px] rounded-full flex items-center px-[2px] flex-shrink-0 transition-colors duration-200 ${on ? 'bg-foreground' : 'bg-muted-foreground/30'}`}
     >
-      <div className={`w-[27px] h-[27px] rounded-full bg-white shadow-md transition-transform duration-200 ${on ? 'translate-x-[20px]' : 'translate-x-0'}`} />
+      <div className={`w-[27px] h-[27px] rounded-full bg-background shadow-md transition-transform duration-200 ${on ? 'translate-x-[20px]' : 'translate-x-0'}`} />
     </button>
   );
 }
@@ -89,7 +89,7 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-background pb-16">
 
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-background border-b border-black/[0.07] flex items-center justify-center h-14 relative">
+      <div className="sticky top-0 z-40 bg-background border-b border-border flex items-center justify-center h-14 relative">
         <h1 className="text-[16px] font-semibold text-foreground">Account Settings</h1>
         <button
           onClick={() => router.back()}
@@ -139,7 +139,7 @@ export default function SettingsPage() {
             <select
               value={locale}
               onChange={e => setLocale(e.target.value)}
-              className="text-[13px] text-black/40 bg-transparent outline-none appearance-none cursor-pointer pr-5 text-right"
+              className="text-[13px] text-muted-foreground bg-transparent outline-none appearance-none cursor-pointer pr-5 text-right"
               style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0px center' }}
             >
               {LOCALES.map(l => (
@@ -183,16 +183,16 @@ export default function SettingsPage() {
       <Row label="Member Guidelines"   onClick={() => {}} />
 
       {/* Log out / Delete */}
-      <div className="mt-8 border-t border-black/[0.07]">
+      <div className="mt-8 border-t border-border">
         <button
           onClick={handleSignOut}
-          className="w-full py-4 text-[15px] text-foreground text-center border-b border-black/[0.07] bg-background active:bg-black/[0.03] transition-colors"
+          className="w-full py-4 text-[15px] text-foreground text-center border-b border-border bg-background active:bg-muted/30 transition-colors"
         >
           Log Out
         </button>
         <button
           onClick={() => {}}
-          className="w-full py-4 text-[15px] text-black/40 text-center bg-background active:bg-black/[0.03] transition-colors"
+          className="w-full py-4 text-[15px] text-muted-foreground text-center bg-background active:bg-muted/30 transition-colors"
         >
           Delete or Pause Account
         </button>

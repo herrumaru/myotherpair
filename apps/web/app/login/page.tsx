@@ -71,21 +71,21 @@ export default function LoginPage() {
 
       {/* Content */}
       <div className="flex-1 px-6 pt-6 pb-4 overflow-y-auto">
-        <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-black/30 mb-5 text-center">
+        <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-muted-foreground/70 mb-5 text-center">
           myotherpair
         </p>
         <h1 className="font-display text-[2.6rem] font-bold text-foreground leading-[1.1] tracking-[-0.025em] text-center mb-3">
           Welcome back
         </h1>
-        <p className="text-center text-black/40 text-[15px] mb-10 leading-relaxed">
+        <p className="text-center text-muted-foreground text-[15px] mb-10 leading-relaxed">
           Sign in to your account.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-3">
 
           {/* Email */}
-          <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
-            <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Email address</p>
+          <div className="bg-card rounded-2xl border border-border px-5 py-4">
+            <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-1.5">Email address</p>
             <input
               type="email"
               value={email}
@@ -93,14 +93,14 @@ export default function LoginPage() {
               placeholder="you@example.com"
               autoComplete="email"
               required
-              className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder-black/20"
+              className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder:text-muted-foreground/40"
             />
           </div>
 
           {/* Password */}
-          <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
+          <div className="bg-card rounded-2xl border border-border px-5 py-4">
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider">Password</p>
+              <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider">Password</p>
               <button type="button" className="text-[12px] text-foreground font-semibold">Forgot?</button>
             </div>
             <div className="flex items-center gap-2">
@@ -111,9 +111,9 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 autoComplete="current-password"
                 required
-                className="flex-1 bg-transparent text-foreground text-[17px] outline-none placeholder-black/20"
+                className="flex-1 bg-transparent text-foreground text-[17px] outline-none placeholder:text-muted-foreground/40"
               />
-              <button type="button" onClick={() => setShowPass(v => !v)} className="text-black/30 hover:text-black/50 transition-colors">
+              <button type="button" onClick={() => setShowPass(v => !v)} className="text-muted-foreground hover:text-foreground transition-colors">
                 {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
@@ -146,16 +146,16 @@ export default function LoginPage() {
 
         {/* Divider */}
         <div className="flex items-center gap-4 my-7">
-          <div className="flex-1 h-px bg-black/10" />
-          <span className="text-[11px] text-black/30 font-semibold uppercase tracking-wider">or</span>
-          <div className="flex-1 h-px bg-black/10" />
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-[11px] text-muted-foreground/70 font-semibold uppercase tracking-wider">or</span>
+          <div className="flex-1 h-px bg-border" />
         </div>
 
         {/* Google */}
         <button
           type="button"
           onClick={handleGoogle}
-          className="w-full h-[54px] rounded-full bg-white border-2 border-black/10 flex items-center justify-center gap-3 text-[15px] font-medium text-foreground transition-all active:scale-[0.98] hover:border-black/20"
+          className="w-full h-[54px] rounded-full bg-card border-2 border-border flex items-center justify-center gap-3 text-[15px] font-medium text-foreground transition-all active:scale-[0.98] hover:border-border/80"
         >
           <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -166,7 +166,7 @@ export default function LoginPage() {
           Continue with Google
         </button>
 
-        <p className="text-center text-[13px] text-black/40 mt-8">
+        <p className="text-center text-[13px] text-muted-foreground mt-8">
           Don&apos;t have an account?{' '}
           <a href="/signup" className="text-foreground font-semibold">Create one</a>
         </p>

@@ -5,11 +5,11 @@ import { usePathname } from 'next/navigation';
 import { Home, Search, Plus, Mail, User } from 'lucide-react';
 
 const TABS = [
-  { to: '/app/browse',   Icon: Home,       label: 'Browse'   },
-  { to: '/app/search',   Icon: Search,     label: 'Search'   },
-  { to: '/app/create',   Icon: Plus,       label: 'Sell'     },
-  { to: '/app/messages', Icon: Mail,       label: 'Inbox'    },
-  { to: '/app/profile',  Icon: User,       label: 'Profile'  },
+  { to: '/app/browse',   Icon: Home,   label: 'Browse'  },
+  { to: '/app/search',   Icon: Search, label: 'Search'  },
+  { to: '/app/create',   Icon: Plus,   label: 'Sell'    },
+  { to: '/app/messages', Icon: Mail,   label: 'Inbox'   },
+  { to: '/app/profile',  Icon: User,   label: 'Profile' },
 ];
 
 export default function BottomNav() {
@@ -21,7 +21,10 @@ export default function BottomNav() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#1a1a1a]" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+    >
       <div className="flex items-center max-w-lg mx-auto" style={{ height: 64 }}>
         {TABS.map(({ to, Icon, label }) => {
           const active = isActive(to);
@@ -34,15 +37,10 @@ export default function BottomNav() {
               <Icon
                 size={22}
                 strokeWidth={active ? 2.2 : 1.6}
-                className={active ? 'text-[#f05d23]' : 'text-white/50'}
+                className={active ? 'text-accent' : 'text-muted-foreground'}
               />
               <span
-                className="font-medium"
-                style={{
-                  fontSize: 10,
-                  lineHeight: 1,
-                  color: active ? '#f05d23' : 'rgba(255,255,255,0.5)',
-                }}
+                className={`text-[10px] font-medium leading-none ${active ? 'text-accent' : 'text-muted-foreground'}`}
               >
                 {label}
               </span>

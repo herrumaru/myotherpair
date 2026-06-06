@@ -45,12 +45,12 @@ const CONDITION_LABELS: Record<string, string> = {
 };
 
 const CONDITION_COLORS: Record<string, string> = {
-  new_with_tags:    'bg-emerald-50 text-emerald-700 border-emerald-200',
-  new_without_tags: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  excellent:        'bg-blue-50 text-blue-700 border-blue-200',
-  good:             'bg-blue-50 text-blue-700 border-blue-200',
-  fair:             'bg-amber-50 text-amber-700 border-amber-200',
-  poor:             'bg-red-50 text-red-700 border-red-200',
+  new_with_tags:    'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20',
+  new_without_tags: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20',
+  excellent:        'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
+  good:             'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
+  fair:             'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20',
+  poor:             'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20',
 };
 
 function timeAgo(dateStr: string): string {
@@ -383,10 +383,10 @@ export default function ListingDetailPage() {
               onClick={handleSave}
               disabled={savingHeart}
               className={`flex-shrink-0 w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all active:scale-95 ${
-                saved ? 'border-red-400 bg-red-50' : 'border-black/10 bg-white'
+                saved ? 'border-red-400 bg-red-400/10' : 'border-border bg-card'
               }`}
             >
-              <Heart className={`h-5 w-5 transition-all ${saved ? 'fill-red-500 text-red-500' : 'text-black/30'}`} />
+              <Heart className={`h-5 w-5 transition-all ${saved ? 'fill-red-500 text-red-500' : 'text-muted-foreground/70'}`} />
             </button>
           )}
         </div>
@@ -412,16 +412,16 @@ export default function ListingDetailPage() {
         </div>
 
         {/* ── Size chips ───────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-black/8 p-4">
-          <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-3">Shoe size</p>
+        <div className="bg-card rounded-2xl border border-border p-4">
+          <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-3">Shoe size</p>
           <div className="flex gap-3">
             {[
               { label: 'UK', value: sizeEq?.uk ?? String(listing.size) },
               { label: 'US', value: sizeEq?.us ?? String(listing.size) },
               { label: 'EU', value: sizeEq?.eu ?? String(listing.size) },
             ].map(({ label, value }) => (
-              <div key={label} className="flex-1 text-center bg-background rounded-xl py-3 border border-black/6">
-                <p className="text-[11px] text-black/35 font-medium mb-0.5">{label}</p>
+              <div key={label} className="flex-1 text-center bg-background rounded-xl py-3 border border-border">
+                <p className="text-[11px] text-muted-foreground font-medium mb-0.5">{label}</p>
                 <p className="text-[18px] font-bold text-foreground">{value}</p>
               </div>
             ))}
@@ -430,8 +430,8 @@ export default function ListingDetailPage() {
 
         {/* ── Seller card ──────────────────────────────────────────── */}
         {seller && (
-          <div className="bg-white rounded-2xl border border-black/8 p-4">
-            <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-3">Seller</p>
+          <div className="bg-card rounded-2xl border border-border p-4">
+            <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-3">Seller</p>
             <div className="flex items-center gap-3">
               {seller.avatar_url ? (
                 <img src={seller.avatar_url} alt={seller.name} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
@@ -463,15 +463,15 @@ export default function ListingDetailPage() {
 
         {/* ── Description ──────────────────────────────────────────── */}
         {listing.description && (
-          <div className="bg-white rounded-2xl border border-black/8 p-4">
-            <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-2">Description</p>
+          <div className="bg-card rounded-2xl border border-border p-4">
+            <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-2">Description</p>
             <p className="text-[14px] text-foreground leading-relaxed">{listing.description}</p>
           </div>
         )}
 
         {/* ── Details table ────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
-          <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider px-4 pt-4 pb-3">Details</p>
+        <div className="bg-card rounded-2xl border border-border overflow-hidden">
+          <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider px-4 pt-4 pb-3">Details</p>
           {[
             { label: 'Brand',     value: listing.shoe_brand },
             { label: 'Model',     value: listing.shoe_model },
@@ -479,7 +479,7 @@ export default function ListingDetailPage() {
             { label: 'Foot',      value: sideLabel },
             { label: 'Listed',    value: timeAgo(listing.created_at) },
           ].map(({ label, value }, i, arr) => (
-            <div key={label} className={`flex items-center justify-between px-4 py-3 ${i < arr.length - 1 ? 'border-b border-black/5' : ''}`}>
+            <div key={label} className={`flex items-center justify-between px-4 py-3 ${i < arr.length - 1 ? 'border-b border-border' : ''}`}>
               <span className="text-[13px] text-muted-foreground">{label}</span>
               <span className="text-[13px] font-medium text-foreground">{value}</span>
             </div>
@@ -488,11 +488,11 @@ export default function ListingDetailPage() {
 
         {/* ── Buyer protection ─────────────────────────────────────── */}
         {!isOwner && !isSold && (
-          <div className="flex items-start gap-3 bg-emerald-50 border border-emerald-100 rounded-2xl p-4">
-            <ShieldCheck className="h-5 w-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+          <div className="flex items-start gap-3 bg-emerald-500/10 border border-emerald-500/15 rounded-2xl p-4">
+            <ShieldCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-[13px] font-semibold text-emerald-800">Buyer protection</p>
-              <p className="text-[12px] text-emerald-700 mt-0.5 leading-relaxed">
+              <p className="text-[13px] font-semibold text-emerald-800 dark:text-emerald-300">Buyer protection</p>
+              <p className="text-[12px] text-emerald-700 dark:text-emerald-400 mt-0.5 leading-relaxed">
                 Message the seller to confirm details before purchasing. Report any issues within 48 hours.
               </p>
             </div>
@@ -521,7 +521,7 @@ export default function ListingDetailPage() {
 
         {/* ── Report ───────────────────────────────────────────────── */}
         {!isOwner && (
-          <div className="rounded-2xl border border-black/6 overflow-hidden">
+          <div className="rounded-2xl border border-border overflow-hidden">
             {reportState === 'idle' && (
               <button
                 onClick={() => setReportState('open')}
@@ -544,7 +544,7 @@ export default function ListingDetailPage() {
                     <button
                       key={r.value}
                       onClick={() => setReportReason(r.value)}
-                      className={`w-full text-left px-3 py-2.5 rounded-xl text-[13px] transition-colors ${reportReason === r.value ? 'bg-foreground text-background font-semibold' : 'bg-black/[0.04] text-foreground'}`}
+                      className={`w-full text-left px-3 py-2.5 rounded-xl text-[13px] transition-colors ${reportReason === r.value ? 'bg-foreground text-background font-semibold' : 'bg-muted/40 text-foreground'}`}
                     >
                       {r.label}
                     </button>
@@ -553,7 +553,7 @@ export default function ListingDetailPage() {
                 <div className="flex gap-2 pt-1">
                   <button
                     onClick={() => setReportState('idle')}
-                    className="flex-1 h-10 rounded-xl border border-black/10 text-[13px] text-foreground font-medium"
+                    className="flex-1 h-10 rounded-xl border border-border text-[13px] text-foreground font-medium"
                   >
                     Cancel
                   </button>
@@ -582,7 +582,7 @@ export default function ListingDetailPage() {
 
       {/* ── Sticky bottom actions ────────────────────────────────── */}
       {!isOwner && !isSold && (
-        <div className="fixed bottom-[60px] left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-black/[0.07] px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+12px)] space-y-2.5 max-w-lg mx-auto">
+        <div className="fixed bottom-[60px] left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+12px)] space-y-2.5 max-w-lg mx-auto">
           {contactError && (
             <p className="text-xs text-destructive bg-destructive/10 rounded-xl px-4 py-2">{contactError}</p>
           )}
@@ -597,7 +597,7 @@ export default function ListingDetailPage() {
             {listing.price != null && (
               <button
                 onClick={() => setOfferOpen(true)}
-                className="flex-1 h-[48px] rounded-xl border-2 border-black/15 bg-white text-foreground text-[14px] font-semibold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all"
+                className="flex-1 h-[48px] rounded-xl border-2 border-border bg-card text-foreground text-[14px] font-semibold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-all"
               >
                 <Tag className="h-4 w-4" /> Make offer
               </button>
@@ -626,11 +626,11 @@ export default function ListingDetailPage() {
           {/* Sheet */}
           <div className="fixed bottom-0 left-0 right-0 z-50 max-w-lg mx-auto bg-background rounded-t-[28px] px-6 pt-5 pb-[calc(env(safe-area-inset-bottom)+24px)] shadow-2xl">
             {/* Handle */}
-            <div className="w-10 h-1 bg-black/15 rounded-full mx-auto mb-5" />
+            <div className="w-10 h-1 bg-muted-foreground/20 rounded-full mx-auto mb-5" />
 
             <div className="flex items-center justify-between mb-1">
               <h2 className="text-[20px] font-bold text-foreground">Make an offer</h2>
-              <button onClick={() => setOfferOpen(false)} className="w-8 h-8 rounded-full bg-black/6 flex items-center justify-center">
+              <button onClick={() => setOfferOpen(false)} className="w-8 h-8 rounded-full bg-muted/60 flex items-center justify-center">
                 <X className="h-4 w-4 text-foreground" />
               </button>
             </div>
@@ -645,10 +645,10 @@ export default function ListingDetailPage() {
             </div>
 
             {/* Offer price input */}
-            <div className="bg-black/[0.03] rounded-2xl px-5 py-4 mb-6">
-              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Your offer ({listing.currency})</p>
+            <div className="bg-muted/30 rounded-2xl px-5 py-4 mb-6">
+              <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-1.5">Your offer ({listing.currency})</p>
               <div className="flex items-center gap-2">
-                <span className="text-[28px] font-bold text-black/20">{sym}</span>
+                <span className="text-[28px] font-bold text-muted-foreground/50">{sym}</span>
                 <input
                   type="number"
                   inputMode="decimal"
@@ -656,7 +656,7 @@ export default function ListingDetailPage() {
                   onChange={e => setOfferPrice(e.target.value)}
                   min="1"
                   step="1"
-                  className="flex-1 bg-transparent text-foreground text-[28px] font-bold outline-none placeholder-black/15"
+                  className="flex-1 bg-transparent text-foreground text-[28px] font-bold outline-none placeholder:text-muted-foreground/30"
                   placeholder="0"
                   autoFocus
                 />

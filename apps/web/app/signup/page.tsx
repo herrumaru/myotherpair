@@ -75,8 +75,8 @@ function CardInput({
   inputRef?: React.Ref<HTMLInputElement>; onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void;
 }) {
   return (
-    <div className={`bg-white rounded-2xl border border-black/10 px-5 py-4 transition-all ${disabled ? 'opacity-40' : ''}`}>
-      <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">{label}</p>
+    <div className={`bg-card rounded-2xl border border-border px-5 py-4 transition-all ${disabled ? 'opacity-40' : ''}`}>
+      <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-1.5">{label}</p>
       <input
         ref={inputRef}
         type={type}
@@ -86,7 +86,7 @@ function CardInput({
         placeholder={placeholder}
         disabled={disabled}
         autoComplete={autoComplete}
-        className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder-black/20 leading-snug"
+        className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder:text-muted-foreground/40 leading-snug"
       />
     </div>
   );
@@ -102,7 +102,7 @@ function RadioCard({
       type="button"
       onClick={onClick}
       className={`w-full flex items-center justify-between px-5 py-5 rounded-2xl border-2 bg-white transition-all text-left active:scale-[0.99] ${
-        selected ? 'border-foreground shadow-sm' : 'border-black/10'
+        selected ? 'border-foreground shadow-sm' : 'border-border'
       }`}
     >
       <div>
@@ -110,7 +110,7 @@ function RadioCard({
         {sublabel && <p className="text-[13px] text-black/40 mt-0.5">{sublabel}</p>}
       </div>
       <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ml-4 transition-all ${
-        selected ? 'border-foreground' : 'border-black/20'
+        selected ? 'border-foreground' : 'border-border'
       }`}>
         {selected && <div className="w-3 h-3 rounded-full bg-foreground" />}
       </div>
@@ -125,8 +125,8 @@ function SizeCard({
 }) {
   const sizes = getSizes(system);
   return (
-    <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
-      <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">{label}</p>
+    <div className="bg-card rounded-2xl border border-border px-5 py-4">
+      <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-1.5">{label}</p>
       <select
         value={value}
         onChange={e => onChange(e.target.value)}
@@ -177,8 +177,8 @@ function CityAutocomplete({
 
   return (
     <div ref={containerRef} className="relative">
-      <div className={`bg-white rounded-2xl border border-black/10 px-5 py-4 transition-all ${disabled ? 'opacity-40' : ''}`}>
-        <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">City</p>
+      <div className={`bg-card rounded-2xl border border-border px-5 py-4 transition-all ${disabled ? 'opacity-40' : ''}`}>
+        <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-1.5">City</p>
         <input
           value={query}
           onChange={e => { setQuery(e.target.value); onChange(e.target.value); setOpen(true); }}
@@ -186,11 +186,11 @@ function CityAutocomplete({
           placeholder={disabled ? 'Select a country first' : 'Start typing your city…'}
           disabled={disabled}
           autoComplete="off"
-          className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder-black/20 disabled:cursor-not-allowed leading-snug"
+          className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder:text-muted-foreground/40 disabled:cursor-not-allowed leading-snug"
         />
       </div>
       {open && !disabled && filtered.length > 0 && (
-        <div className="absolute z-50 left-0 right-0 mt-1 bg-white rounded-2xl border border-black/10 shadow-lg max-h-52 overflow-y-auto">
+        <div className="absolute z-50 left-0 right-0 mt-1 bg-card rounded-2xl border border-border shadow-lg max-h-52 overflow-y-auto">
           {filtered.map(c => (
             <button
               key={`${c.name}-${c.stateCode}`}
@@ -374,7 +374,7 @@ export default function SignupPage() {
     <div className="min-h-screen bg-background flex flex-col">
 
       {/* Progress bar — very top, full bleed */}
-      <div className="h-[3px] bg-black/8 w-full flex-shrink-0">
+      <div className="h-[3px] bg-foreground/8 w-full flex-shrink-0">
         <div
           className="h-full bg-foreground transition-all duration-500 ease-out"
           style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
@@ -404,8 +404,8 @@ export default function SignupPage() {
         {/* ── Step 1: Name ────────────────────────────────────────────────── */}
         {step === 1 && (
           <div className="space-y-3">
-            <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
-              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">First name</p>
+            <div className="bg-card rounded-2xl border border-border px-5 py-4">
+              <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-1.5">First name</p>
               <input
                 ref={firstInputRef}
                 type="text"
@@ -414,7 +414,7 @@ export default function SignupPage() {
                 onKeyDown={e => e.key === 'Enter' && canProceed && handleNext()}
                 placeholder="Your first name"
                 autoComplete="given-name"
-                className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder-black/20 leading-snug"
+                className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder:text-muted-foreground/40 leading-snug"
               />
             </div>
             <CardInput
@@ -434,9 +434,9 @@ export default function SignupPage() {
               usernameStatus === 'taken'   ? 'border-red-300'   :
               usernameStatus === 'invalid' ? 'border-amber-300' :
               usernameStatus === 'available' ? 'border-green-400' :
-              'border-black/10'
+              'border-border'
             }`}>
-              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Username</p>
+              <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-1.5">Username</p>
               <div className="flex items-center gap-1">
                 <span className="text-[17px] text-black/25 font-medium select-none">@</span>
                 <input
@@ -452,7 +452,7 @@ export default function SignupPage() {
                   placeholder="your_username"
                   maxLength={30}
                   autoComplete="username"
-                  className="flex-1 bg-transparent text-foreground text-[17px] outline-none placeholder-black/20 leading-snug"
+                  className="flex-1 bg-transparent text-foreground text-[17px] outline-none placeholder:text-muted-foreground/40 leading-snug"
                 />
                 {usernameStatus === 'checking' && (
                   <svg className="w-4 h-4 animate-spin text-black/30 flex-shrink-0" fill="none" viewBox="0 0 24 24">
@@ -483,9 +483,9 @@ export default function SignupPage() {
                 ? 'border-red-300'
                 : form.email && /\S+@\S+\.\S+/.test(form.email)
                   ? 'border-green-400'
-                  : 'border-black/10'
+                  : 'border-border'
             }`}>
-              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Email address</p>
+              <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-1.5">Email address</p>
               <input
                 ref={firstInputRef}
                 type="email"
@@ -494,7 +494,7 @@ export default function SignupPage() {
                 onKeyDown={e => e.key === 'Enter' && canProceed && handleNext()}
                 placeholder="you@example.com"
                 autoComplete="email"
-                className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder-black/20 leading-snug"
+                className="w-full bg-transparent text-foreground text-[17px] outline-none placeholder:text-muted-foreground/40 leading-snug"
               />
             </div>
             {form.email && !/\S+@\S+\.\S+/.test(form.email) && (
@@ -506,8 +506,8 @@ export default function SignupPage() {
         {/* ── Step 4: Password ────────────────────────────────────────────── */}
         {step === 4 && (
           <div className="space-y-3">
-            <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
-              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Password</p>
+            <div className="bg-card rounded-2xl border border-border px-5 py-4">
+              <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-1.5">Password</p>
               <div className="flex items-center gap-2">
                 <input
                   ref={firstInputRef}
@@ -517,7 +517,7 @@ export default function SignupPage() {
                   onKeyDown={e => e.key === 'Enter' && canProceed && handleNext()}
                   placeholder="••••••••"
                   autoComplete="new-password"
-                  className="flex-1 bg-transparent text-foreground text-[17px] outline-none placeholder-black/20"
+                  className="flex-1 bg-transparent text-foreground text-[17px] outline-none placeholder:text-muted-foreground/40"
                 />
                 <button type="button" onClick={() => setShowPass(v => !v)} className="text-black/30 hover:text-black/50 transition-colors">
                   {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -531,8 +531,8 @@ export default function SignupPage() {
         {/* ── Step 5: Location ────────────────────────────────────────────── */}
         {step === 5 && (
           <div className="space-y-3">
-            <div className="bg-white rounded-2xl border border-black/10 px-5 py-4">
-              <p className="text-[11px] text-black/35 font-semibold uppercase tracking-wider mb-1.5">Country</p>
+            <div className="bg-card rounded-2xl border border-border px-5 py-4">
+              <p className="text-[11px] text-muted-foreground font-semibold uppercase tracking-wider mb-1.5">Country</p>
               <select
                 value={form.countryCode}
                 onChange={e => { update('countryCode', e.target.value); update('city', ''); }}
@@ -581,7 +581,7 @@ export default function SignupPage() {
                   type="button"
                   onClick={() => changeSizeSystem(sys)}
                   className={`flex-1 h-11 rounded-full text-sm font-semibold border-2 transition-all ${
-                    form.sizeSystem === sys ? 'bg-foreground text-background border-foreground' : 'bg-white text-foreground border-black/10'
+                    form.sizeSystem === sys ? 'bg-foreground text-background border-foreground' : 'bg-card text-foreground border-border'
                   }`}
                 >
                   {sys}

@@ -122,13 +122,13 @@ export default function MessagesPage() {
             <Link
               key={conv.id}
               href={`/app/messages/${conv.id}`}
-              className={`flex items-center gap-3.5 px-5 py-4 border-b border-black/6 hover:bg-black/[0.02] active:bg-black/[0.04] transition-colors opacity-0 animate-fade-in stagger-${Math.min(i + 1, 6)}`}
+              className={`flex items-center gap-3.5 px-5 py-4 border-b border-border hover:bg-muted/20 active:bg-muted/40 transition-colors opacity-0 animate-fade-in stagger-${Math.min(i + 1, 6)}`}
             >
               <div className="flex-shrink-0">
                 {conv.otherUserAvatar ? (
                   <img src={conv.otherUserAvatar} alt="" className="w-[46px] h-[46px] rounded-full object-cover" />
                 ) : (
-                  <div className="w-[46px] h-[46px] rounded-full bg-black/8 flex items-center justify-center text-[15px] font-bold text-foreground">
+                  <div className="w-[46px] h-[46px] rounded-full bg-muted flex items-center justify-center text-[15px] font-bold text-foreground">
                     {conv.otherUserName[0]}
                   </div>
                 )}
@@ -136,9 +136,9 @@ export default function MessagesPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-0.5">
                   <p className="font-semibold text-[14px] text-foreground">{conv.otherUserName}</p>
-                  <span className="text-[11px] text-black/30">{conv.lastMessageTime}</span>
+                  <span className="text-[11px] text-muted-foreground/70">{conv.lastMessageTime}</span>
                 </div>
-                <p className="text-[13px] text-black/40 truncate">
+                <p className="text-[13px] text-muted-foreground truncate">
                   {conv.lastMessage || 'Start the conversation'}
                 </p>
               </div>

@@ -144,8 +144,8 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-background pb-24">
         <div className="max-w-lg mx-auto px-5 pt-5 space-y-3">
-          <div className="bg-black/5 rounded-2xl h-52 animate-pulse" />
-          <div className="bg-black/5 rounded-2xl h-24 animate-pulse" />
+          <div className="bg-muted rounded-2xl h-52 animate-pulse" />
+          <div className="bg-muted rounded-2xl h-24 animate-pulse" />
         </div>
       </div>
     );
@@ -167,7 +167,7 @@ export default function ProfilePage() {
             Profile
           </h1>
           <div className="flex items-center gap-2">
-            <Link href="/app/settings" className="w-9 h-9 flex items-center justify-center rounded-full bg-black/[0.06]">
+            <Link href="/app/settings" className="w-9 h-9 flex items-center justify-center rounded-full bg-muted/60">
               <Settings className="w-[17px] h-[17px] text-black/50" />
             </Link>
           </div>
@@ -214,22 +214,22 @@ export default function ProfilePage() {
             {name || 'Set your name'}
           </h2>
           {profile.username && (
-            <p className="text-[13px] text-black/35 font-medium mt-0.5">@{profile.username}</p>
+            <p className="text-[13px] text-muted-foreground font-medium mt-0.5">@{profile.username}</p>
           )}
           {profile.location && (
-            <div className="flex items-center gap-1 text-black/40 mt-1">
+            <div className="flex items-center gap-1 text-muted-foreground mt-1">
               <MapPin className="w-3 h-3" />
               <span className="text-[12px]">{profile.location}</span>
             </div>
           )}
           <div className="flex items-center gap-1.5 mt-2">
             <div className="h-1.5 w-1.5 rounded-full bg-accent" />
-            <span className="text-[12px] text-black/40 font-medium">{completionPct}% complete</span>
+            <span className="text-[12px] text-muted-foreground font-medium">{completionPct}% complete</span>
           </div>
         </div>
 
         {/* ── Stats row ── */}
-        <div className="flex border-t border-b border-black/[0.07] divide-x divide-black/[0.07]">
+        <div className="flex border-t border-b border-border divide-x divide-border">
           {[
             { label: 'Listings',  value: stats.listings },
             { label: 'Matches',   value: stats.matches  },
@@ -237,19 +237,19 @@ export default function ProfilePage() {
           ].map(s => (
             <div key={s.label} className="flex-1 py-4 text-center">
               <p className="text-[20px] font-bold text-foreground leading-none">{s.value}</p>
-              <p className="text-[10px] text-black/30 font-medium uppercase tracking-wider mt-1">{s.label}</p>
+              <p className="text-[10px] text-muted-foreground/70 font-medium uppercase tracking-wider mt-1">{s.label}</p>
             </div>
           ))}
         </div>
 
         {/* ── Tab bar ── */}
-        <div className="flex border-b border-black/[0.07]">
+        <div className="flex border-b border-border">
           {TABS.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex-1 py-3.5 text-[13px] font-semibold transition-colors relative ${
-                activeTab === tab.id ? 'text-foreground' : 'text-black/35'
+                activeTab === tab.id ? 'text-foreground' : 'text-muted-foreground'
               }`}
             >
               {tab.label}
@@ -269,24 +269,24 @@ export default function ProfilePage() {
 
               {/* Shoe profile */}
               {(leftSize || rightSize || profile.is_amputee) && (
-                <div className="bg-white rounded-2xl border border-black/[0.07] px-5 py-4">
+                <div className="bg-card rounded-2xl border border-border px-5 py-4">
                   <p className="text-[10px] font-bold text-accent tracking-[0.2em] uppercase mb-3">My Shoe Profile</p>
                   {profile.is_amputee ? (
                     <div className="flex items-center gap-2">
-                      <span className="text-[13px] text-black/40 font-medium">Single shoe needed</span>
+                      <span className="text-[13px] text-muted-foreground font-medium">Single shoe needed</span>
                       <span className="text-[13px] font-semibold text-foreground">{leftSize || rightSize}</span>
                     </div>
                   ) : (
                     <div className="flex gap-3">
                       {leftSize && (
-                        <div className="flex-1 bg-black/[0.04] rounded-xl px-4 py-3 text-center">
-                          <p className="text-[10px] text-black/30 font-medium uppercase tracking-wider mb-1">Left</p>
+                        <div className="flex-1 bg-muted/40 rounded-xl px-4 py-3 text-center">
+                          <p className="text-[10px] text-muted-foreground/70 font-medium uppercase tracking-wider mb-1">Left</p>
                           <p className="text-[16px] font-bold text-foreground">{leftSize}</p>
                         </div>
                       )}
                       {rightSize && (
-                        <div className="flex-1 bg-black/[0.04] rounded-xl px-4 py-3 text-center">
-                          <p className="text-[10px] text-black/30 font-medium uppercase tracking-wider mb-1">Right</p>
+                        <div className="flex-1 bg-muted/40 rounded-xl px-4 py-3 text-center">
+                          <p className="text-[10px] text-muted-foreground/70 font-medium uppercase tracking-wider mb-1">Right</p>
                           <p className="text-[16px] font-bold text-foreground">{rightSize}</p>
                         </div>
                       )}
@@ -296,7 +296,7 @@ export default function ProfilePage() {
               )}
 
               {/* Bio */}
-              <div className="bg-white rounded-2xl border border-black/[0.07] px-5 py-4">
+              <div className="bg-card rounded-2xl border border-border px-5 py-4">
                 <p className="text-[10px] font-bold text-accent tracking-[0.2em] uppercase mb-2">What I'm looking for</p>
                 <p className="text-[15px] text-foreground leading-relaxed">
                   {profile.bio || (profile.location ? `Looking for shoes in ${profile.location}` : 'Looking for the perfect match')}
@@ -311,7 +311,7 @@ export default function ProfilePage() {
 
               {/* Saved listings */}
               {savedListings.length > 0 && (
-                <div className="bg-white rounded-2xl border border-black/[0.07] overflow-hidden">
+                <div className="bg-card rounded-2xl border border-border overflow-hidden">
                   <div className="px-5 pt-4 pb-1 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Heart className="w-3.5 h-3.5 text-accent" />
@@ -322,7 +322,7 @@ export default function ProfilePage() {
                   <div className="flex gap-2.5 overflow-x-auto scrollbar-hide px-5 pb-4 pt-3">
                     {savedListings.map(l => (
                       <Link key={l.id} href={`/app/listing/${l.id}`} className="flex-shrink-0 w-[85px]">
-                        <div className="aspect-square rounded-xl overflow-hidden bg-black/5 mb-1.5">
+                        <div className="aspect-square rounded-xl overflow-hidden bg-muted/50 mb-1.5">
                           {l.photos[0] ? (
                             <img src={l.photos[0]} alt="" className="w-full h-full object-cover" />
                           ) : (
@@ -330,7 +330,7 @@ export default function ProfilePage() {
                           )}
                         </div>
                         <p className="text-[11px] font-semibold text-foreground truncate">{l.shoe_brand}</p>
-                        <p className="text-[10px] text-black/35 truncate">{l.shoe_model}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{l.shoe_model}</p>
                         <p className="text-[11px] font-bold text-foreground">{l.price != null ? `$${l.price}` : '—'}</p>
                       </Link>
                     ))}
@@ -339,7 +339,7 @@ export default function ProfilePage() {
               )}
 
               {memberSince && (
-                <p className="text-center text-[11px] text-black/25">Member since {memberSince}</p>
+                <p className="text-center text-[11px] text-muted-foreground/60">Member since {memberSince}</p>
               )}
             </div>
           )}
@@ -349,51 +349,51 @@ export default function ProfilePage() {
             <div className="space-y-5">
 
               {/* Quick links */}
-              <div className="bg-white rounded-2xl border border-black/[0.07] overflow-hidden">
-                <Link href="/app/listings" className="flex items-center gap-4 px-4 py-3.5 border-b border-black/[0.06] active:bg-black/[0.02]">
-                  <div className="w-9 h-9 rounded-xl bg-black/[0.05] flex items-center justify-center flex-shrink-0">
-                    <ShoppingBag className="w-4 h-4 text-black/40" />
+              <div className="bg-card rounded-2xl border border-border overflow-hidden">
+                <Link href="/app/listings" className="flex items-center gap-4 px-4 py-3.5 border-b border-border active:bg-muted/20">
+                  <div className="w-9 h-9 rounded-xl bg-muted/50 flex items-center justify-center flex-shrink-0">
+                    <ShoppingBag className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <div className="flex-1">
                     <p className="text-[14px] font-semibold text-foreground">My Listings</p>
-                    <p className="text-[12px] text-black/35">{stats.listings} active</p>
+                    <p className="text-[12px] text-muted-foreground">{stats.listings} active</p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-black/20" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
                 </Link>
-                <Link href="/app/messages" className="flex items-center gap-4 px-4 py-3.5 border-b border-black/[0.06] active:bg-black/[0.02]">
-                  <div className="w-9 h-9 rounded-xl bg-black/[0.05] flex items-center justify-center flex-shrink-0">
-                    <MessageCircle className="w-4 h-4 text-black/40" />
+                <Link href="/app/messages" className="flex items-center gap-4 px-4 py-3.5 border-b border-border active:bg-muted/20">
+                  <div className="w-9 h-9 rounded-xl bg-muted/50 flex items-center justify-center flex-shrink-0">
+                    <MessageCircle className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <div className="flex-1">
                     <p className="text-[14px] font-semibold text-foreground">Messages</p>
-                    <p className="text-[12px] text-black/35">{stats.matches} conversation{stats.matches !== 1 ? 's' : ''}</p>
+                    <p className="text-[12px] text-muted-foreground">{stats.matches} conversation{stats.matches !== 1 ? 's' : ''}</p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-black/20" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
                 </Link>
-                <Link href="/app/browse" className="flex items-center gap-4 px-4 py-3.5 active:bg-black/[0.02]">
-                  <div className="w-9 h-9 rounded-xl bg-black/[0.05] flex items-center justify-center flex-shrink-0">
-                    <Heart className="w-4 h-4 text-black/40" />
+                <Link href="/app/browse" className="flex items-center gap-4 px-4 py-3.5 active:bg-muted/20">
+                  <div className="w-9 h-9 rounded-xl bg-muted/50 flex items-center justify-center flex-shrink-0">
+                    <Heart className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <div className="flex-1">
                     <p className="text-[14px] font-semibold text-foreground">Saved Shoes</p>
-                    <p className="text-[12px] text-black/35">{stats.saved} saved</p>
+                    <p className="text-[12px] text-muted-foreground">{stats.saved} saved</p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-black/20" />
+                  <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
                 </Link>
               </div>
 
               {/* Sold */}
               {soldListings.length > 0 && (
                 <div>
-                  <p className="text-[11px] font-bold text-black/30 tracking-[0.15em] uppercase mb-2 px-1">Sold</p>
-                  <div className="bg-white rounded-2xl border border-black/[0.07] overflow-hidden">
+                  <p className="text-[11px] font-bold text-muted-foreground/70 tracking-[0.15em] uppercase mb-2 px-1">Sold</p>
+                  <div className="bg-card rounded-2xl border border-border overflow-hidden">
                     {soldListings.map((l, i) => (
                       <Link
                         key={l.id}
                         href={`/app/listing/${l.id}`}
-                        className={`flex items-center gap-3 px-4 py-3 active:bg-black/[0.02] ${i < soldListings.length - 1 ? 'border-b border-black/[0.06]' : ''}`}
+                        className={`flex items-center gap-3 px-4 py-3 active:bg-muted/20 ${i < soldListings.length - 1 ? 'border-b border-border' : ''}`}
                       >
-                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-black/5 flex-shrink-0">
+                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-muted/50 flex-shrink-0">
                           {l.photos[0]
                             ? <img src={l.photos[0]} alt="" className="w-full h-full object-cover" />
                             : <div className="w-full h-full flex items-center justify-center text-lg opacity-20">👟</div>
@@ -401,9 +401,9 @@ export default function ProfilePage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-[13px] font-semibold text-foreground truncate">{l.shoe_brand} {l.shoe_model}</p>
-                          <p className="text-[11px] text-black/35">{l.price != null ? `$${l.price}` : '—'} · sold</p>
+                          <p className="text-[11px] text-muted-foreground">{l.price != null ? `$${l.price}` : '—'} · sold</p>
                         </div>
-                        <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Sold</span>
+                        <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">Sold</span>
                       </Link>
                     ))}
                   </div>
@@ -413,28 +413,28 @@ export default function ProfilePage() {
               {/* Purchases */}
               {purchases.length > 0 && (
                 <div>
-                  <p className="text-[11px] font-bold text-black/30 tracking-[0.15em] uppercase mb-2 px-1">Purchases</p>
-                  <div className="bg-white rounded-2xl border border-black/[0.07] overflow-hidden">
+                  <p className="text-[11px] font-bold text-muted-foreground/70 tracking-[0.15em] uppercase mb-2 px-1">Purchases</p>
+                  <div className="bg-card rounded-2xl border border-border overflow-hidden">
                     {purchases.map((p, i) => (
                       <div
                         key={p.id}
-                        className={`flex items-center gap-3 px-4 py-3 ${i < purchases.length - 1 ? 'border-b border-black/[0.06]' : ''}`}
+                        className={`flex items-center gap-3 px-4 py-3 ${i < purchases.length - 1 ? 'border-b border-border' : ''}`}
                       >
-                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-black/5 flex-shrink-0">
+                        <div className="w-10 h-10 rounded-xl overflow-hidden bg-muted/50 flex-shrink-0">
                           {p.listing?.photos[0]
                             ? <img src={p.listing.photos[0]} alt="" className="w-full h-full object-cover" />
-                            : <div className="w-full h-full flex items-center justify-center"><Package className="w-4 h-4 text-black/20" /></div>
+                            : <div className="w-full h-full flex items-center justify-center"><Package className="w-4 h-4 text-muted-foreground/50" /></div>
                           }
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-[13px] font-semibold text-foreground truncate">
                             {p.listing ? `${p.listing.shoe_brand} ${p.listing.shoe_model}` : 'Listing removed'}
                           </p>
-                          <p className="text-[11px] text-black/35">
+                          <p className="text-[11px] text-muted-foreground">
                             ${(p.amount_cents / 100).toFixed(2)} · {new Date(p.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                           </p>
                         </div>
-                        <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Paid</span>
+                        <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full">Paid</span>
                       </div>
                     ))}
                   </div>
@@ -443,7 +443,7 @@ export default function ProfilePage() {
 
               {soldListings.length === 0 && purchases.length === 0 && (
                 <div className="text-center py-10">
-                  <p className="text-[14px] text-black/30">No transaction history yet</p>
+                  <p className="text-[14px] text-muted-foreground/70">No transaction history yet</p>
                 </div>
               )}
             </div>
@@ -455,28 +455,28 @@ export default function ProfilePage() {
 
               {/* Account section */}
               <div>
-                <p className="text-[11px] font-bold text-black/30 tracking-[0.15em] uppercase mb-2 px-1">Account</p>
-                <div className="bg-white rounded-2xl border border-black/[0.07] overflow-hidden">
-                  <Link href="/app/settings" className="flex items-center gap-4 px-5 py-4 border-b border-black/[0.05]">
+                <p className="text-[11px] font-bold text-muted-foreground/70 tracking-[0.15em] uppercase mb-2 px-1">Account</p>
+                <div className="bg-card rounded-2xl border border-border overflow-hidden">
+                  <Link href="/app/settings" className="flex items-center gap-4 px-5 py-4 border-b border-border">
                     <span className="flex-1 text-[14px] font-medium text-foreground">Account Settings</span>
-                    <ChevronRight className="w-4 h-4 text-black/20" />
+                    <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
                   </Link>
                   <div className="flex items-center gap-4 px-5 py-4">
                     <span className="flex-1 text-[14px] font-medium text-foreground">Email</span>
-                    <span className="text-[13px] text-black/30 truncate max-w-[160px]">{profile.email ?? ''}</span>
+                    <span className="text-[13px] text-muted-foreground/70 truncate max-w-[160px]">{profile.email ?? ''}</span>
                   </div>
                 </div>
               </div>
 
               {/* Preferences section */}
               <div>
-                <p className="text-[11px] font-bold text-black/30 tracking-[0.15em] uppercase mb-2 px-1">Preferences</p>
-                <div className="bg-white rounded-2xl border border-black/[0.07] overflow-hidden">
+                <p className="text-[11px] font-bold text-muted-foreground/70 tracking-[0.15em] uppercase mb-2 px-1">Preferences</p>
+                <div className="bg-card rounded-2xl border border-border overflow-hidden">
                   {/* Dark mode */}
-                  <div className="flex items-center gap-4 px-5 py-4 border-b border-black/[0.05]">
+                  <div className="flex items-center gap-4 px-5 py-4 border-b border-border">
                     {theme === 'dark'
-                      ? <Moon className="w-4 h-4 text-black/30 flex-shrink-0" />
-                      : <Sun  className="w-4 h-4 text-black/30 flex-shrink-0" />
+                      ? <Moon className="w-4 h-4 text-muted-foreground/70 flex-shrink-0" />
+                      : <Sun  className="w-4 h-4 text-muted-foreground/70 flex-shrink-0" />
                     }
                     <span className="flex-1 text-[14px] font-medium text-foreground">
                       {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
@@ -484,22 +484,22 @@ export default function ProfilePage() {
                     <button
                       onClick={toggleTheme}
                       className={`w-11 h-[26px] rounded-full flex items-center transition-colors duration-200 ${
-                        theme === 'dark' ? 'bg-foreground' : 'bg-black/15'
+                        theme === 'dark' ? 'bg-foreground' : 'bg-muted-foreground/25'
                       }`}
                     >
-                      <div className={`w-[22px] h-[22px] rounded-full bg-white shadow-sm mx-[2px] transition-transform duration-200 ${
+                      <div className={`w-[22px] h-[22px] rounded-full bg-background shadow-sm mx-[2px] transition-transform duration-200 ${
                         theme === 'dark' ? 'translate-x-[18px]' : 'translate-x-0'
                       }`} />
                     </button>
                   </div>
                   {/* Language */}
                   <div className="flex items-center gap-4 px-5 py-4">
-                    <Globe className="w-4 h-4 text-black/30 flex-shrink-0" />
+                    <Globe className="w-4 h-4 text-muted-foreground/70 flex-shrink-0" />
                     <span className="flex-1 text-[14px] font-medium text-foreground">Language</span>
                     <select
                       value={locale}
                       onChange={e => setLocale(e.target.value)}
-                      className="text-[13px] text-foreground bg-black/5 border border-black/8 rounded-xl px-2.5 py-1.5 outline-none appearance-none cursor-pointer pr-7"
+                      className="text-[13px] text-foreground bg-muted border border-border rounded-xl px-2.5 py-1.5 outline-none appearance-none cursor-pointer pr-7"
                       style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
                     >
                       {LOCALES.map(l => (
@@ -512,8 +512,8 @@ export default function ProfilePage() {
 
               {/* Danger zone */}
               <div>
-                <p className="text-[11px] font-bold text-black/30 tracking-[0.15em] uppercase mb-2 px-1">Account</p>
-                <div className="bg-white rounded-2xl border border-black/[0.07] overflow-hidden">
+                <p className="text-[11px] font-bold text-muted-foreground/70 tracking-[0.15em] uppercase mb-2 px-1">Account</p>
+                <div className="bg-card rounded-2xl border border-border overflow-hidden">
                   <button
                     onClick={handleSignOut}
                     className="w-full flex items-center gap-4 px-5 py-4"
@@ -524,7 +524,7 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <p className="text-center text-[10px] text-black/20 tracking-wider uppercase pt-1">Privacy · Terms</p>
+              <p className="text-center text-[10px] text-muted-foreground/50 tracking-wider uppercase pt-1">Privacy · Terms</p>
             </div>
           )}
         </div>
