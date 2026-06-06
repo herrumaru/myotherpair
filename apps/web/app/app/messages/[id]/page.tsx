@@ -105,11 +105,14 @@ export default function MessageThreadPage() {
     })();
   }, [userId, matchId]);
 
-  // Mark conversation as read when opened
+  // Mark conversation as read when opened, then signal nav to clear the badge
   useEffect(() => {
     if (!userId || !matchId || isUser1 === null) return;
     const col = isUser1 ? 'user1_last_read_at' : 'user2_last_read_at';
-    supabase.from('matches').update({ [col]: new Date().toISOString() }).eq('id', matchId);
+    supabase.from('matches')
+      .update({ [col]: new Date().toISOString() })
+      .eq('id', matchId)
+      .then(() => { window.dispatchEvent(new CustomEvent('conversation-read')); });
   }, [userId, matchId, isUser1]);
 
   // Load messages
