@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { supabase } from '../../../../lib/supabase';
 import { ArrowLeft, Send } from 'lucide-react';
 import { formatSizeLabel } from '../../../../lib/sizeConversion';
@@ -22,12 +23,9 @@ interface MatchInfo {
   listingSize: string;
 }
 
-interface PageProps {
-  params: { id: string };
-}
-
-export default function MessageThreadPage({ params }: PageProps) {
-  const matchId  = params.id;
+export default function MessageThreadPage() {
+  const params  = useParams<{ id: string }>();
+  const matchId = params.id;
   const [userId,    setUserId]    = useState<string | null>(null);
   const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null);
   const [messages,  setMessages]  = useState<Message[]>([]);

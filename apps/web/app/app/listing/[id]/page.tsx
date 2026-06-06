@@ -309,7 +309,7 @@ export default function ListingDetailPage() {
   const sizeEq      = getEquivalents(String(listing.size), 'UK');
 
   return (
-    <div className="min-h-screen bg-background pb-36">
+    <div className="min-h-screen bg-background pb-[200px]">
 
       {/* ── Photo carousel ──────────────────────────────────────────── */}
       <div className="relative bg-muted">
