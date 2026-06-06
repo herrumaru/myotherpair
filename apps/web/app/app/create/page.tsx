@@ -74,6 +74,7 @@ export default function CreatePage() {
   const [photoPreviews,setPhotoPreviews]= useState<string[]>([]);
   const MAX_PHOTOS = 6;
 
+  const [swapAvailable, setSwapAvailable] = useState(false);
   const [form, setForm] = useState({
     brand: '', model: '', size: '',
     side: '' as Foot | '',
@@ -162,16 +163,17 @@ export default function CreatePage() {
 
       const { error: insertErr } = await supabase.from('listings').insert({
         user_id:     userId,
-        shoe_brand:  form.brand,
-        shoe_model:  form.model.trim(),
-        size:        ukSize,
-        foot_side:   form.side,
-        condition:   form.condition,
-        price:       parseFloat(form.price),
-        currency:    currency.code,
-        description: form.description.trim() || null,
+        shoe_brand:     form.brand,
+        shoe_model:     form.model.trim(),
+        size:           ukSize,
+        foot_side:      form.side,
+        condition:      form.condition,
+        price:          parseFloat(form.price),
+        currency:       currency.code,
+        description:    form.description.trim() || null,
         photos,
-        status:      'active',
+        status:         'active',
+        swap_available: swapAvailable,
       });
 
       if (insertErr) throw insertErr;
@@ -426,6 +428,25 @@ export default function CreatePage() {
               />
               <p className="text-[10px] text-black/20 text-right mt-1">{form.description.length}/500</p>
             </div>
+
+            {/* Swap toggle */}
+            <button
+              type="button"
+              onClick={() => setSwapAvailable(v => !v)}
+              className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border-2 bg-white transition-all text-left active:scale-[0.99] ${
+                swapAvailable ? 'border-foreground shadow-sm' : 'border-black/10'
+              }`}
+            >
+              <div>
+                <p className="text-[16px] font-medium text-foreground">Open to swap</p>
+                <p className="text-[13px] text-black/40 mt-0.5">Mismatched pair? Find someone to swap with</p>
+              </div>
+              <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ml-4 transition-all ${
+                swapAvailable ? 'border-foreground bg-foreground' : 'border-black/20'
+              }`}>
+                {swapAvailable && <Check className="w-3 h-3 text-background" />}
+              </div>
+            </button>
           </div>
         )}
 

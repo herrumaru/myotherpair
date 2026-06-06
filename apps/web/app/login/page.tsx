@@ -13,14 +13,14 @@ export default function LoginPage() {
   const [loading,    setLoading]    = useState(false);
   const [authError,  setAuthError]  = useState('');
   const [checking,   setChecking]   = useState(true);
-  const [redirectTo, setRedirectTo] = useState('/app');
+  const [redirectTo, setRedirectTo] = useState('/app/browse');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const r = params.get('redirect');
     if (r && r.startsWith('/')) setRedirectTo(r);
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) router.replace(r && r.startsWith('/') ? r : '/app');
+      if (session) router.replace(r && r.startsWith('/') ? r : '/app/browse');
       else setChecking(false);
     });
   }, [router]);

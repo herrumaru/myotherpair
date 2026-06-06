@@ -27,6 +27,7 @@ interface Listing {
   user_id: string;
   status: string;
   created_at: string;
+  swap_available: boolean;
 }
 
 interface Seller {
@@ -101,7 +102,7 @@ export default function ListingDetailPage() {
     (async () => {
       const { data, error } = await supabase
         .from('listings')
-        .select('id, shoe_brand, shoe_model, size, foot_side, condition, price, currency, description, photos, user_id, status, created_at')
+        .select('id, shoe_brand, shoe_model, size, foot_side, condition, price, currency, description, photos, user_id, status, created_at, swap_available')
         .eq('id', listingId)
         .single();
 
@@ -119,9 +120,10 @@ export default function ListingDetailPage() {
         currency:    (d.currency   as string) || 'USD',
         description: d.description as string | null,
         photos:      Array.isArray(d.photos) ? (d.photos as string[]) : [],
-        user_id:     d.user_id     as string,
-        status:      d.status      as string,
-        created_at:  d.created_at  as string,
+        user_id:        d.user_id        as string,
+        status:         d.status         as string,
+        created_at:     d.created_at     as string,
+        swap_available: !!(d.swap_available),
       };
       setListing(listingData);
 
@@ -389,6 +391,11 @@ export default function ListingDetailPage() {
             <Badge variant={sideVariant} className="text-[12px] px-3 py-1">
               {sideLabel} foot
             </Badge>
+            {listing.swap_available && (
+              <span className="text-[12px] font-semibold px-3 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
+                🔄 Open to swap
+              </span>
+            )}
           </div>
         </div>
 
@@ -457,9 +464,6 @@ export default function ListingDetailPage() {
             { label: 'Brand',     value: listing.shoe_brand },
             { label: 'Model',     value: listing.shoe_model },
             { label: 'Condition', value: CONDITION_LABELS[listing.condition] ?? listing.condition },
-            { label: 'UK size',   value: `UK ${sizeEq?.uk ?? listing.size}` },
-            { label: 'US size',   value: `US ${sizeEq?.us ?? listing.size}` },
-            { label: 'EU size',   value: `EU ${sizeEq?.eu ?? listing.size}` },
             { label: 'Foot',      value: sideLabel },
             { label: 'Listed',    value: timeAgo(listing.created_at) },
           ].map(({ label, value }, i, arr) => (

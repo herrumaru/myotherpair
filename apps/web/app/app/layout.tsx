@@ -12,7 +12,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
-        router.replace('/login?redirect=%2Fapp');
+        router.replace('/login?redirect=%2Fapp%2Fbrowse');
       } else {
         setChecked(true);
       }
@@ -20,7 +20,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) {
-        router.replace('/login?redirect=%2Fapp');
+        router.replace('/login?redirect=%2Fapp%2Fbrowse');
       }
     });
 

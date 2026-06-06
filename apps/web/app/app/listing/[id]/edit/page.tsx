@@ -66,13 +66,14 @@ export default function EditListingPage() {
   const params  = useParams<{ id: string }>();
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const [userId,     setUserId]     = useState<string | null>(null);
-  const [loading,    setLoading]    = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [error,      setError]      = useState('');
-  const [sizeSystem, setSizeSystem] = useState<SizeSystem>('UK');
-  const [currency,   setCurrency]   = useState<CurrencyInfo>({ code: 'USD', symbol: '$', name: 'US Dollar' });
-  const [photos,     setPhotos]     = useState<PhotoItem[]>([]);
+  const [userId,        setUserId]        = useState<string | null>(null);
+  const [loading,       setLoading]       = useState(true);
+  const [submitting,    setSubmitting]    = useState(false);
+  const [error,         setError]         = useState('');
+  const [sizeSystem,    setSizeSystem]    = useState<SizeSystem>('UK');
+  const [currency,      setCurrency]      = useState<CurrencyInfo>({ code: 'USD', symbol: '$', name: 'US Dollar' });
+  const [photos,        setPhotos]        = useState<PhotoItem[]>([]);
+  const [swapAvailable, setSwapAvailable] = useState(false);
   const MAX_PHOTOS = 6;
 
   const [form, setForm] = useState({
@@ -108,7 +109,7 @@ export default function EditListingPage() {
     (async () => {
       const { data, error: fetchErr } = await supabase
         .from('listings')
-        .select('shoe_brand, shoe_model, size, foot_side, condition, price, currency, description, photos, user_id')
+        .select('shoe_brand, shoe_model, size, foot_side, condition, price, currency, description, photos, user_id, swap_available')
         .eq('id', params.id)
         .single();
 
@@ -126,6 +127,7 @@ export default function EditListingPage() {
         price:       data.price != null ? String(data.price) : '',
         description: data.description ?? '',
       });
+      setSwapAvailable(!!(data as Record<string, unknown>).swap_available);
 
       if (Array.isArray(data.photos)) {
         setPhotos((data.photos as string[]).map(src => ({ src })));
@@ -196,15 +198,16 @@ export default function EditListingPage() {
       const { error: updateErr } = await supabase
         .from('listings')
         .update({
-          shoe_brand:  form.brand,
-          shoe_model:  form.model.trim(),
-          size:        ukSize,
-          foot_side:   form.side,
-          condition:   form.condition,
-          price:       parseFloat(form.price),
-          currency:    currency.code,
-          description: form.description.trim() || null,
-          photos:      finalPhotos,
+          shoe_brand:     form.brand,
+          shoe_model:     form.model.trim(),
+          size:           ukSize,
+          foot_side:      form.side,
+          condition:      form.condition,
+          price:          parseFloat(form.price),
+          currency:       currency.code,
+          description:    form.description.trim() || null,
+          photos:         finalPhotos,
+          swap_available: swapAvailable,
         })
         .eq('id', params.id);
 
@@ -430,6 +433,25 @@ export default function EditListingPage() {
             />
             <p className="text-[10px] text-black/20 text-right mt-1">{form.description.length}/500</p>
           </div>
+
+          {/* Swap toggle */}
+          <button
+            type="button"
+            onClick={() => setSwapAvailable(v => !v)}
+            className={`w-full flex items-center justify-between px-5 py-4 rounded-2xl border-2 bg-white transition-all text-left active:scale-[0.99] ${
+              swapAvailable ? 'border-foreground shadow-sm' : 'border-black/10'
+            }`}
+          >
+            <div>
+              <p className="text-[16px] font-medium text-foreground">Open to swap</p>
+              <p className="text-[13px] text-black/40 mt-0.5">Mismatched pair? Find someone to swap with</p>
+            </div>
+            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ml-4 transition-all ${
+              swapAvailable ? 'border-foreground bg-foreground' : 'border-black/20'
+            }`}>
+              {swapAvailable && <Check className="w-3 h-3 text-background" />}
+            </div>
+          </button>
         </div>
 
         {error && (

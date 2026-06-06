@@ -26,6 +26,7 @@ interface Listing {
   condition: string;
   price: number | null;
   photos: string[];
+  swap_available: boolean;
 }
 
 interface Filters {
@@ -89,10 +90,15 @@ function ListingCard({
           {/* Gradient hover */}
           <div className="absolute inset-0 bg-gradient-to-t from-foreground/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           {/* Side badge */}
-          <div className="absolute top-2 left-2">
+          <div className="absolute top-2 left-2 flex flex-col gap-1">
             <Badge variant={sideVariant} className="shadow-sm backdrop-blur-sm text-[10px]">
               {sideLabel}
             </Badge>
+            {listing.swap_available && (
+              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-teal-500/90 text-white backdrop-blur-sm shadow-sm">
+                🔄 Swap
+              </span>
+            )}
           </div>
         </div>
         <div className="p-3 space-y-0.5">
@@ -314,7 +320,7 @@ export default function BrowsePage() {
     (async () => {
       const { data, error } = await supabase
         .from('listings')
-        .select('id, shoe_brand, shoe_model, size, foot_side, condition, price, photos')
+        .select('id, shoe_brand, shoe_model, size, foot_side, condition, price, photos, swap_available')
         .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(80);
@@ -329,8 +335,9 @@ export default function BrowsePage() {
           size:       r.size       as number,
           foot_side:  r.foot_side  as string,
           condition:  r.condition  as string,
-          price:      r.price      as number | null,
-          photos:     Array.isArray(r.photos) ? (r.photos as string[]) : [],
+          price:          r.price          as number | null,
+          photos:         Array.isArray(r.photos) ? (r.photos as string[]) : [],
+          swap_available: !!(r.swap_available),
         })),
       );
       setLoading(false);
