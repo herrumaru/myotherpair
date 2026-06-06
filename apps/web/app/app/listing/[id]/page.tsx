@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../../../lib/supabase';
@@ -211,17 +211,39 @@ export default function ListingDetailPage({ params }: PageProps) {
   const sideLabel   = listing.foot_side === 'L' ? 'Left' : listing.foot_side === 'R' ? 'Right' : 'Either';
   const sideVariant = listing.foot_side === 'L' ? 'left' as const : listing.foot_side === 'R' ? 'right' as const : 'default' as const;
 
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+  const photos = listing.photos.length > 0 ? listing.photos : [];
+
+  const prevPhoto = () => setPhotoIndex(i => Math.max(0, i - 1));
+  const nextPhoto = () => setPhotoIndex(i => Math.min(photos.length - 1, i + 1));
+
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Image */}
+      {/* Photo carousel */}
       <div className="relative">
-        <div className="aspect-[4/3] bg-muted overflow-hidden">
-          {listing.photos[0] ? (
-            <img src={listing.photos[0]} alt={`${listing.shoe_brand} ${listing.shoe_model}`} className="w-full h-full object-cover" />
+        <div
+          className="aspect-[4/3] bg-muted overflow-hidden"
+          onTouchStart={e => { touchStartX.current = e.touches[0].clientX; }}
+          onTouchEnd={e => {
+            if (touchStartX.current === null) return;
+            const dx = e.changedTouches[0].clientX - touchStartX.current;
+            if (dx < -40) nextPhoto();
+            else if (dx > 40) prevPhoto();
+            touchStartX.current = null;
+          }}
+        >
+          {photos[photoIndex] ? (
+            <img
+              src={photos[photoIndex]}
+              alt={`${listing.shoe_brand} ${listing.shoe_model} — photo ${photoIndex + 1}`}
+              className="w-full h-full object-cover"
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-8xl opacity-20">👟</div>
           )}
         </div>
+
         {/* Back button */}
         <button
           onClick={() => router.back()}
@@ -229,12 +251,27 @@ export default function ListingDetailPage({ params }: PageProps) {
         >
           <ArrowLeft className="h-4 w-4 text-white" />
         </button>
+
         {/* Sold overlay */}
         {isSold && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
             <span className="text-white font-bold text-2xl tracking-widest uppercase">Sold</span>
           </div>
         )}
+
+        {/* Dot indicators */}
+        {photos.length > 1 && (
+          <div className="absolute top-4 left-0 right-0 flex justify-center gap-1.5">
+            {photos.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setPhotoIndex(i)}
+                className={`rounded-full transition-all ${i === photoIndex ? 'w-4 h-1.5 bg-white' : 'w-1.5 h-1.5 bg-white/50'}`}
+              />
+            ))}
+          </div>
+        )}
+
         {/* Badges */}
         <div className="absolute bottom-3 left-4 flex gap-2">
           <Badge variant={sideVariant} className="shadow-sm backdrop-blur-sm text-xs px-3 py-1">{sideLabel} shoe</Badge>

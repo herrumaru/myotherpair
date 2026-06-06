@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../../lib/supabase';
-import { ChevronLeft, ChevronRight, Camera, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Camera, Check, X, Plus } from 'lucide-react';
 import { getCurrencyForCountry, extractCountry, type CurrencyInfo } from '../../../lib/currency';
 import {
   type SizeSystem,
@@ -70,8 +70,9 @@ export default function CreatePage() {
   const [sizeSystem,   setSizeSystem]   = useState<SizeSystem>('UK');
   const [currency,     setCurrency]     = useState<CurrencyInfo>({ code: 'USD', symbol: '$', name: 'US Dollar' });
   const [error,        setError]        = useState('');
-  const [photoFile,    setPhotoFile]    = useState<File | null>(null);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoFiles,   setPhotoFiles]   = useState<File[]>([]);
+  const [photoPreviews,setPhotoPreviews]= useState<string[]>([]);
+  const MAX_PHOTOS = 6;
 
   const [form, setForm] = useState({
     brand: '', model: '', size: '',
@@ -97,16 +98,24 @@ export default function CreatePage() {
     setForm(prev => ({ ...prev, [key]: value }));
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (photoPreview) URL.revokeObjectURL(photoPreview);
-    setPhotoFile(file);
-    setPhotoPreview(URL.createObjectURL(file));
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    const remaining = MAX_PHOTOS - photoFiles.length;
+    const toAdd = files.slice(0, remaining);
+    setPhotoFiles(prev => [...prev, ...toAdd]);
+    setPhotoPreviews(prev => [...prev, ...toAdd.map(f => URL.createObjectURL(f))]);
+    e.target.value = '';
+  };
+
+  const removePhoto = (idx: number) => {
+    URL.revokeObjectURL(photoPreviews[idx]);
+    setPhotoFiles(prev => prev.filter((_, i) => i !== idx));
+    setPhotoPreviews(prev => prev.filter((_, i) => i !== idx));
   };
 
   const canProceed = (() => {
     switch (step) {
-      case 1: return !!photoPreview;
+      case 1: return photoPreviews.length > 0;
       case 2: return !!form.brand && form.model.trim().length > 0;
       case 3: return !!form.size && !!form.side;
       case 4: return !!form.condition;
@@ -134,18 +143,18 @@ export default function CreatePage() {
     setError('');
 
     try {
-      let photos: string[] = [];
+      const photos: string[] = [];
 
-      if (photoFile) {
-        const ext  = photoFile.name.split('.').pop() ?? 'jpg';
-        const path = `${userId}/${Date.now()}.${ext}`;
+      for (const file of photoFiles) {
+        const ext  = file.name.split('.').pop() ?? 'jpg';
+        const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
         const { data: stored, error: uploadErr } = await supabase.storage
           .from('shoe-images')
-          .upload(path, photoFile, { upsert: true });
+          .upload(path, file, { upsert: true });
         if (uploadErr) throw uploadErr;
         if (stored) {
           const { data: { publicUrl } } = supabase.storage.from('shoe-images').getPublicUrl(path);
-          photos = [publicUrl];
+          photos.push(publicUrl);
         }
       }
 
@@ -174,7 +183,7 @@ export default function CreatePage() {
   }
 
   const stepConfig: Record<number, { title: string; subtitle: string }> = {
-    1: { title: 'Add a photo',        subtitle: 'A clear photo gets 3× more interest.' },
+    1: { title: 'Add photos',          subtitle: 'Show different angles — up to 6 photos.' },
     2: { title: 'What shoe is it?',   subtitle: 'Brand and model help buyers find you.' },
     3: { title: 'Size and foot',      subtitle: 'Which foot does this shoe fit?' },
     4: { title: 'What\'s the condition?', subtitle: 'Be honest — buyers appreciate it.' },
@@ -210,37 +219,81 @@ export default function CreatePage() {
           {subtitle}
         </p>
 
-        {/* ── Step 1: Photo ──────────────────────────────────────────────── */}
+        {/* ── Step 1: Photos ─────────────────────────────────────────────── */}
         {step === 1 && (
-          <div className="space-y-4">
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="w-full aspect-square rounded-3xl overflow-hidden bg-white border-2 border-dashed border-black/15 flex flex-col items-center justify-center gap-3 transition-all active:scale-[0.98] group"
-            >
-              {photoPreview ? (
-                <div className="relative w-full h-full">
-                  <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <p className="text-white text-sm font-semibold">Change photo</p>
-                  </div>
+          <div className="space-y-3">
+            {/* Main photo (large) */}
+            <div className="grid grid-cols-2 gap-2">
+              {/* First slot — always large */}
+              {photoPreviews[0] ? (
+                <div className="col-span-2 relative aspect-square rounded-2xl overflow-hidden">
+                  <img src={photoPreviews[0]} alt="Main" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(0)}
+                    className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/50 flex items-center justify-center"
+                  >
+                    <X className="w-3.5 h-3.5 text-white" />
+                  </button>
+                  <span className="absolute bottom-2 left-2 text-[10px] font-semibold text-white bg-black/40 rounded-full px-2 py-0.5">
+                    Cover
+                  </span>
                 </div>
               ) : (
-                <>
-                  <div className="w-16 h-16 rounded-2xl bg-black/5 flex items-center justify-center group-hover:bg-black/8 transition-colors">
-                    <Camera className="h-7 w-7 text-black/30" />
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="col-span-2 aspect-square rounded-2xl bg-white border-2 border-dashed border-black/15 flex flex-col items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-black/5 flex items-center justify-center">
+                    <Camera className="h-6 w-6 text-black/30" />
                   </div>
-                  <div className="text-center">
-                    <p className="text-[15px] font-semibold text-foreground">Tap to add photo</p>
-                    <p className="text-[13px] text-black/35 mt-0.5">JPG, PNG or HEIC</p>
-                  </div>
-                </>
+                  <p className="text-[14px] font-semibold text-foreground">Add cover photo</p>
+                  <p className="text-[12px] text-black/35">Tap to upload</p>
+                </button>
               )}
-            </button>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
-            {!photoPreview && (
-              <p className="text-center text-[13px] text-black/30">A photo is required to list your shoe</p>
-            )}
+
+              {/* Additional photo slots */}
+              {photoPreviews.slice(1).map((src, i) => (
+                <div key={i} className="relative aspect-square rounded-2xl overflow-hidden">
+                  <img src={src} alt={`Angle ${i + 2}`} className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(i + 1)}
+                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/50 flex items-center justify-center"
+                  >
+                    <X className="w-3 h-3 text-white" />
+                  </button>
+                </div>
+              ))}
+
+              {/* Add more slot */}
+              {photoPreviews.length > 0 && photoPreviews.length < MAX_PHOTOS && (
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="aspect-square rounded-2xl bg-white border-2 border-dashed border-black/12 flex flex-col items-center justify-center gap-1 active:scale-[0.98] transition-all"
+                >
+                  <Plus className="w-5 h-5 text-black/25" />
+                  <p className="text-[11px] text-black/30 font-medium">Add more</p>
+                </button>
+              )}
+            </div>
+
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handlePhotoChange}
+            />
+
+            <p className="text-center text-[12px] text-black/30">
+              {photoPreviews.length === 0
+                ? 'At least 1 photo required · up to 6'
+                : `${photoPreviews.length} of ${MAX_PHOTOS} photos added`}
+            </p>
           </div>
         )}
 
