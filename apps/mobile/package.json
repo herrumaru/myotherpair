@@ -17,6 +17,7 @@
     "@supabase/supabase-js": "^2.99.0",
     "country-state-city": "^3.2.1",
     "expo": "~52.0.23",
+    "expo-build-properties": "^56.0.19",
     "expo-constants": "~17.0.8",
     "expo-font": "~13.0.4",
     "expo-image": "~2.0.7",

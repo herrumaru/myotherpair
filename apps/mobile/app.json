@@ -13,7 +13,10 @@
     },
     "android": {
       "package": "com.myotherpair.app",
-      "backgroundColor": "#141210"
+      "backgroundColor": "#141210",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -21,11 +24,30 @@
       "expo-font",
       [
         "expo-image-picker",
-        { "photosPermission": "MyOtherPair needs access to your photos to upload shoe images." }
+        {
+          "photosPermission": "MyOtherPair needs access to your photos to upload shoe images."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "1.9.25"
+          }
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "8d622841-8e4f-4f89-8b77-1ae789c93982"
+      }
+    },
+    "owner": "xabux"
   }
 }
