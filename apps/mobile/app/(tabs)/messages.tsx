@@ -50,7 +50,7 @@ export default function MessagesScreen() {
     setLoading(true);
     const { data: matches } = await supabase
       .from('matches')
-      .select('id, user_id_1, user_id_2, listing_id_1, listing_id_2')
+      .select('id, user_id_1, user_id_2, listing_id_1, listing_id_2, created_at')
       .or(`user_id_1.eq.${uid},user_id_2.eq.${uid}`)
       .order('created_at', { ascending: false });
 
